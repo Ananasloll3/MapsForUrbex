@@ -11,7 +11,8 @@ const io = new Server(server);
 const PORT = 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 
-app.use(express.json());
+// ⚠️ MODIFICATION ICI : On augmente la limite à 50mb pour accepter les images en Base64
+app.use(express.json({ limit: '50mb' }));
 app.use(express.static('public'));
 
 const obtenirHeure = () => new Date().toLocaleTimeString('fr-FR');
@@ -39,7 +40,6 @@ io.on('connection', (socket) => {
         io.emit('sos_alert', data);
     });
 
-    // NOUVEAU : GESTION DU PING TACTIQUE
     socket.on('ping_tactique', (data) => {
         logInfo(`📍 Ping tactique reçu : ${data.lat}, ${data.lng}`);
         io.emit('ping_tactique', data); 

@@ -8,18 +8,10 @@
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div id="fake-ui" class="hidden">
-        <div class="fake-header" ondblclick="disablePanic()">
-            🏞️ RandoCartes - Sentiers Publics
-        </div>
-    </div>
-
+    <div id="fake-ui" class="hidden"><div class="fake-header" ondblclick="disablePanic()">🏞️ RandoCartes - Sentiers Publics</div></div>
     <div id="sos-screen" class="sos-overlay"></div>
     <div id="stealth-screen" style="display:none;"></div>
-    
-    <div id="offline-banner" class="offline-banner hidden">
-        ⚠️ ZONE BLANCHE : Signal Perdu. S.O.S et Radio inactifs !
-    </div>
+    <div id="offline-banner" class="offline-banner hidden">⚠️ ZONE BLANCHE : Signal Perdu. S.O.S et Radio inactifs !</div>
 
     <div id="tactical-hud" class="tactical-hud hidden">
         <div class="hud-row"><span>🛰️ LAT/LNG:</span> <strong id="hud-coords">Recherche...</strong></div>
@@ -50,7 +42,6 @@
         <button id="btn-del" class="tool-btn" onclick="toggleTool('delete')" title="Supprimer">🗑️</button>
         <button id="btn-measure" class="tool-btn" onclick="toggleTool('measure')" title="Mesurer">📏</button>
         <button id="btn-patrol" class="tool-btn" onclick="toggleTool('patrol')" title="Signaler Sécurité">👮</button>
-        
         <button id="btn-export" class="tool-btn" onclick="exportGPX()" title="Exporter en GPX" style="margin-top: 15px;">💾</button>
         <button id="btn-panic" class="tool-btn panic-btn" onclick="triggerPanic()" title="Anti-Sécurité" style="margin-top: 10px;">🚔</button>
     </div>
@@ -63,7 +54,6 @@
             <button onclick="setMapStyle('topo')">⛰️ Topo</button>
             <button onclick="setMapStyle('nuit')">🦇 Nuit</button>
         </div>
-        
         <h4 style="margin-top: 15px; font-size: 13px; color: #7f8c8d; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">Outils Spéciaux</h4>
         <div class="layer-grid">
             <button onclick="toggleRedMode()" id="btn-red-toggle" style="background: rgba(231, 76, 60, 0.15); border: 1px solid #e74c3c; color: #e74c3c;">🔴 Filtre Infrarouge</button>
@@ -84,26 +74,23 @@
     </div>
 
     <div class="bottom-dock">
-        <button class="dock-btn" onclick="toggleLayersMenu()">
-            <span class="dock-icon">🗺️</span><span class="dock-text">Cartes</span>
-        </button>
-        <button class="dock-btn" id="btn-gps-dock" onclick="localiserMoi()">
-            <span class="dock-icon">🎯</span><span class="dock-text">GPS</span>
-        </button>
-        <button class="dock-btn" onclick="toggleRadio()">
-            <span class="dock-icon">📻</span><span class="dock-text">Radio</span>
-        </button>
-        <button class="dock-btn stealth-btn" onclick="toggleStealth()">
-            <span class="dock-icon">🥷</span><span class="dock-text">Furtif</span>
-        </button>
-        <button class="dock-btn sos-btn" onclick="triggerSOS()">
-            <span class="dock-icon">🚨</span><span class="dock-text">S.O.S</span>
-        </button>
+        <button class="dock-btn" onclick="toggleLayersMenu()"><span class="dock-icon">🗺️</span><span class="dock-text">Cartes</span></button>
+        <button class="dock-btn" id="btn-gps-dock" onclick="localiserMoi()"><span class="dock-icon">🎯</span><span class="dock-text">GPS</span></button>
+        <button class="dock-btn" onclick="toggleRadio()"><span class="dock-icon">📻</span><span class="dock-text">Radio</span></button>
+        <button class="dock-btn stealth-btn" onclick="toggleStealth()"><span class="dock-icon">🥷</span><span class="dock-text">Furtif</span></button>
+        <button class="dock-btn sos-btn" onclick="triggerSOS()"><span class="dock-icon">🚨</span><span class="dock-text">S.O.S</span></button>
     </div>
 
     <div id="modal" class="modal-overlay">
         <div class="modal-content">
             <h3 id="modal-title">Nouveau Point Urbex</h3>
+            
+            <div class="input-group">
+                <label>📸 Photo du spot (Optionnel)</label>
+                <input type="file" id="point-photo" accept="image/*" capture="environment" style="background: transparent; border: 1px dashed #bdc3c7; padding: 5px;">
+                <img id="photo-preview" style="display:none; width: 100%; max-height: 100px; object-fit: cover; border-radius: 8px; margin-top: 5px;">
+            </div>
+
             <div class="input-group"><label>Nom du lieu</label><input type="text" id="point-name" required></div>
             <div class="input-group">
                 <label>Statut</label>
@@ -115,10 +102,7 @@
                     <option value="detruit">⚫ Détruit / Muré</option>
                 </select>
             </div>
-            <div class="input-group">
-                <label>Renseignement (Notes tactiques)</label>
-                <textarea id="point-notes" rows="3" placeholder="Ex: Véhicule garé face à la forêt..."></textarea>
-            </div>
+            <div class="input-group"><label>Renseignement (Notes tactiques)</label><textarea id="point-notes" rows="2" placeholder="Ex: Véhicule garé face à la forêt..."></textarea></div>
             <div class="input-group"><label>Date (optionnel)</label><input type="date" id="point-date"></div>
             <div class="input-group">
                 <label>Équipe</label><div id="people-list"><input type="text" class="person-input" placeholder="Personne 1"></div>

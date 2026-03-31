@@ -229,3 +229,25 @@ body.red-mode .hud-row strong { color: #e74c3c; }
 /* Couleur spécifique pour le point d'extraction */
 .bg-extraction { background: linear-gradient(135deg, #3498db, #2980b9); border: 2px solid #fff; }
 .badge-extraction { background-color: #3498db; }
+
+/* =========================================
+   NOUVEAU : STYLES DES PHOTOS DANS LES POPUPS
+   ========================================= */
+.popup-photo {
+    width: 100%;
+    max-height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* On agrandit un poil la popup si y a une photo */
+.custom-popup .leaflet-popup-content {
+    width: 220px !important;
+}
+
+#photo-preview {
+    border: 2px solid #3498db;
+}
