@@ -57,8 +57,8 @@
         </div>
         <h4 style="margin-top: 15px; font-size: 13px; color: #7f8c8d; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">Outils Spéciaux</h4>
         <div class="layer-grid">
-            <button onclick="toggleRedMode()" id="btn-red-toggle" style="background: rgba(231, 76, 60, 0.15); border: 1px solid #e74c3c; color: #e74c3c;">🔴 Infrarouge</button>
-            <button onclick="startTimerPrompt()" style="background: rgba(243, 156, 18, 0.15); border: 1px solid #f39c12; color: #f39c12;">⏱️ Chrono</button>
+            <button onclick="toggleRedMode()" id="btn-red-toggle" style="background: rgba(231, 76, 60, 0.15); border: 1px solid #e74c3c; color: #e74c3c;">🔴 Filtre Infrarouge</button>
+            <button onclick="startTimerPrompt()" style="background: rgba(243, 156, 18, 0.15); border: 1px solid #f39c12; color: #f39c12;">⏱️ Lancer Chrono</button>
             <button onclick="openIntelReport()" style="grid-column: span 2; background: rgba(52, 152, 219, 0.15); border: 1px solid #3498db; color: #3498db;">🌑 Rapport Intel (Lune)</button>
         </div>
     </div>
@@ -70,6 +70,7 @@
         </div>
         <div class="radio-messages" id="radio-messages"></div>
         <div class="radio-input-container">
+            <button id="btn-dictate" onclick="startDictation()" style="background: #2c3e50; border-radius: 0 0 0 15px; padding: 0 12px; font-size: 16px;">🎤</button>
             <input type="text" id="radio-input" placeholder="Message..." onkeypress="if(event.key === 'Enter') sendRadio()">
             <button onclick="sendRadio()">GO</button>
         </div>
@@ -96,11 +97,7 @@
     <div id="modal" class="modal-overlay">
         <div class="modal-content">
             <h3 id="modal-title">Nouveau Point Urbex</h3>
-            <div class="input-group">
-                <label>📸 Photo du spot (Optionnel)</label>
-                <input type="file" id="point-photo" accept="image/*" capture="environment" style="background: transparent; border: 1px dashed #bdc3c7; padding: 5px;">
-                <img id="photo-preview" style="display:none; width: 100%; max-height: 100px; object-fit: cover; border-radius: 8px; margin-top: 5px;">
-            </div>
+            <div class="input-group"><label>📸 Photo du spot (Optionnel)</label><input type="file" id="point-photo" accept="image/*" capture="environment" style="background: transparent; border: 1px dashed #bdc3c7; padding: 5px;"><img id="photo-preview" style="display:none; width: 100%; max-height: 100px; object-fit: cover; border-radius: 8px; margin-top: 5px;"></div>
             <div class="input-group"><label>Nom du lieu</label><input type="text" id="point-name" required></div>
             <div class="input-group">
                 <label>Statut</label>
@@ -114,13 +111,32 @@
             </div>
             <div class="input-group"><label>Renseignement (Notes tactiques)</label><textarea id="point-notes" rows="2" placeholder="Ex: Véhicule garé face à la forêt..."></textarea></div>
             <div class="input-group"><label>Date (optionnel)</label><input type="date" id="point-date"></div>
-            <div class="input-group">
-                <label>Équipe</label><div id="people-list"><input type="text" class="person-input" placeholder="Personne 1"></div>
-                <button type="button" class="btn-small" id="btn-add-person">+ Ajouter un membre</button>
+            <div class="input-group"><label>Équipe</label><div id="people-list"><input type="text" class="person-input" placeholder="Personne 1"></div><button type="button" class="btn-small" id="btn-add-person">+ Ajouter un membre</button></div>
+            <div class="modal-actions"><button class="btn-cancel" id="btn-cancel">Annuler</button><button class="btn-confirm" id="btn-confirm">Valider</button></div>
+        </div>
+    </div>
+
+    <div id="sos-confirm-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center; border: 3px solid #e74c3c; background: #fff;">
+            <h3 style="color: #e74c3c; border-bottom: none; margin-bottom: 5px; font-size: 20px;">🚨 ALERTE S.O.S 🚨</h3>
+            <p style="margin-bottom: 20px; font-size: 14px; color: #2c3e50; font-weight: bold;">
+                Envoyer un signal de détresse avec ta position exacte à toute l'équipe ?
+            </p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-cancel" onclick="document.getElementById('sos-confirm-modal').style.display='none'" style="flex: 1; padding: 15px; font-size: 14px;">ANNULER</button>
+                <button class="btn-confirm" onclick="executeSOS()" style="flex: 1; background: #e74c3c; padding: 15px; font-size: 14px;">🚨 GO !</button>
             </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" id="btn-cancel">Annuler</button>
-                <button class="btn-confirm" id="btn-confirm">Valider</button>
+        </div>
+    </div>
+
+    <div id="system-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center; border: 2px solid #3498db;">
+            <h3 id="sys-modal-title" style="color: #3498db; border-bottom: none; margin-bottom: 5px;">Titre</h3>
+            <p id="sys-modal-desc" style="margin-bottom: 15px; font-size: 14px; color: #7f8c8d;"></p>
+            <input type="text" id="sys-modal-input" style="display:none; width:100%; padding:10px; border-radius:8px; border:1px solid #bdc3c7; margin-bottom:15px; text-align:center; font-weight:bold;">
+            <div style="display: flex; gap: 10px;">
+                <button id="sys-modal-cancel" class="btn-cancel" style="flex: 1; padding: 12px; font-size: 14px;">ANNULER</button>
+                <button id="sys-modal-confirm" class="btn-confirm" style="flex: 1; background: #3498db; padding: 12px; font-size: 14px;">VALIDER</button>
             </div>
         </div>
     </div>

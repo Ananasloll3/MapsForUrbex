@@ -11,7 +11,6 @@ const io = new Server(server);
 const PORT = 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 
-// ⚠️ MODIFICATION ICI : On augmente la limite à 50mb pour accepter les images en Base64
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static('public'));
 
@@ -28,6 +27,7 @@ function lireDonnees() {
 function sauvegarderDonnees(data) { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); }
 
 let utilisateursConnectes = 0;
+let squadPlayers = {}; // 📡 NOUVEAU : Mémoire des positions des joueurs
 
 io.on('connection', (socket) => {
     utilisateursConnectes++;
@@ -45,9 +45,18 @@ io.on('connection', (socket) => {
         io.emit('ping_tactique', data); 
     });
 
+    // 📡 NOUVEAU : Réception de la position en direct d'un joueur
+    socket.on('player_move', (data) => {
+        squadPlayers[socket.id] = data; // Stocke la position avec l'ID unique
+        io.emit('squad_update', squadPlayers); // Renvoie la carte radar à tout le monde
+    });
+
     socket.on('disconnect', () => {
         utilisateursConnectes--;
         logInfo(`Explorateur déconnecté. (En ligne : ${utilisateursConnectes})`);
+        // 📡 On efface le joueur de la carte s'il quitte
+        delete squadPlayers[socket.id];
+        io.emit('squad_update', squadPlayers);
     });
 });
 
