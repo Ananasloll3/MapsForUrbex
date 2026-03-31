@@ -251,3 +251,48 @@ body.red-mode .hud-row strong { color: #e74c3c; }
 #photo-preview {
     border: 2px solid #3498db;
 }
+
+/* =========================================
+   NOUVEAUTÉS V5 : TARGET LOCK & INTEL
+   ========================================= */
+
+/* Bouton Verrouillage Cible (Target Lock) */
+.btn-target-lock {
+    background: rgba(231, 76, 60, 0.1); 
+    color: #e74c3c; 
+    border: 1px solid #e74c3c; 
+    padding: 8px 10px; 
+    border-radius: 6px; 
+    font-size: 12px; 
+    cursor: pointer; 
+    width: 100%; 
+    margin-top: 5px; 
+    font-weight: bold; 
+    transition: 0.2s; 
+    display: flex; 
+    justify-content: center; 
+    gap: 5px;
+}
+.btn-target-lock:hover, .btn-target-lock.locked-active {
+    background: #e74c3c; 
+    color: white;
+}
+body.dark-mode .btn-target-lock { background: rgba(231, 76, 60, 0.2); }
+
+/* Animation du Laser Target */
+.target-laser {
+    animation: dashLaser 20s linear infinite;
+}
+@keyframes dashLaser {
+    to { stroke-dashoffset: -1000; }
+}
+
+/* Modale Intel Sombre */
+body.dark-mode #intel-modal .modal-content {
+    background: #111;
+    border: 1px solid #3498db;
+}
+body.dark-mode #moon-tactical-advice {
+    background: #222;
+    color: #3498db;
+}
