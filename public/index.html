@@ -13,6 +13,29 @@
     <div id="stealth-screen" style="display:none;"></div>
     <div id="offline-banner" class="offline-banner hidden">⚠️ ZONE BLANCHE : Signal Perdu. S.O.S et Radio inactifs !</div>
 
+    <div id="system-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center; border: 2px solid #3498db;">
+            <h3 id="sys-modal-title" style="color: #3498db; border-bottom: none; margin-bottom: 5px;">Titre</h3>
+            <p id="sys-modal-desc" style="margin-bottom: 15px; font-size: 14px; color: #7f8c8d;"></p>
+            <input type="text" id="sys-modal-input" style="display:none; width:100%; padding:10px; border-radius:8px; border:1px solid #bdc3c7; margin-bottom:15px; text-align:center; font-weight:bold;">
+            <div style="display: flex; gap: 10px;">
+                <button id="sys-modal-cancel" class="btn-cancel" style="flex: 1; padding: 12px; font-size: 14px;">ANNULER</button>
+                <button id="sys-modal-confirm" class="btn-confirm" style="flex: 1; background: #3498db; padding: 12px; font-size: 14px;">VALIDER</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sos-confirm-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center; border: 3px solid #e74c3c; background: #fff;">
+            <h3 style="color: #e74c3c; border-bottom: none; margin-bottom: 5px; font-size: 20px;">🚨 ALERTE S.O.S 🚨</h3>
+            <p style="margin-bottom: 20px; font-size: 14px; color: #2c3e50; font-weight: bold;">Envoyer un signal de détresse avec ta position exacte à l'équipe ?</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-cancel" onclick="document.getElementById('sos-confirm-modal').style.display='none'" style="flex: 1; padding: 15px; font-size: 14px;">ANNULER</button>
+                <button class="btn-confirm" onclick="executeSOS()" style="flex: 1; background: #e74c3c; padding: 15px; font-size: 14px;">🚨 GO !</button>
+            </div>
+        </div>
+    </div>
+
     <div id="tactical-hud" class="tactical-hud hidden">
         <div class="hud-row"><span>🛰️ LAT/LNG:</span> <strong id="hud-coords">Recherche...</strong></div>
         <div class="hud-row"><span>🎯 PRÉCISION:</span> <strong id="hud-acc">-- m</strong></div>
@@ -21,9 +44,10 @@
     </div>
 
     <div class="top-bar">
-        <div style="display: flex; gap: 8px; max-width: 70%;">
-            <div class="status-badge" id="status-text">👋 Sélectionne un outil</div>
-            <div class="status-badge hidden" id="extraction-timer" onclick="startTimerPrompt()" style="cursor:pointer; background: #f39c12; color: #fff; min-width: 75px; text-align: center;">⏱️ 00:00</div>
+        <div style="display: flex; gap: 5px; max-width: 75%; flex-wrap: wrap;">
+            <div class="status-badge" id="status-text">👋 Outils</div>
+            <div class="status-badge hidden" id="extraction-timer" onclick="cancelExtractionTimer()" style="cursor:pointer; background: #f39c12; color: #fff; min-width: 60px; text-align: center;">⏱️ 00:00</div>
+            <div class="status-badge hidden" id="deadman-timer" onclick="cancelDeadManSwitch()" style="cursor:pointer; background: #8e44ad; color: #fff; min-width: 60px; text-align: center; animation: pulse 2s infinite;">💀 00:00</div>
         </div>
         <button class="btn-radar-toggle" onclick="toggleRadar()">📡 Radar <span>🔽</span></button>
     </div>
@@ -57,9 +81,19 @@
         </div>
         <h4 style="margin-top: 15px; font-size: 13px; color: #7f8c8d; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">Outils Spéciaux</h4>
         <div class="layer-grid">
-            <button onclick="toggleRedMode()" id="btn-red-toggle" style="background: rgba(231, 76, 60, 0.15); border: 1px solid #e74c3c; color: #e74c3c;">🔴 Filtre Infrarouge</button>
-            <button onclick="startTimerPrompt()" style="background: rgba(243, 156, 18, 0.15); border: 1px solid #f39c12; color: #f39c12;">⏱️ Lancer Chrono</button>
-            <button onclick="openIntelReport()" style="grid-column: span 2; background: rgba(52, 152, 219, 0.15); border: 1px solid #3498db; color: #3498db;">🌑 Rapport Intel (Lune)</button>
+            <button onclick="toggleRedMode()" id="btn-red-toggle" style="background: rgba(231, 76, 60, 0.15); border: 1px solid #e74c3c; color: #e74c3c;">🔴 Infrarouge</button>
+            <button onclick="startTimerPrompt()" style="background: rgba(243, 156, 18, 0.15); border: 1px solid #f39c12; color: #f39c12;">⏱️ Chrono</button>
+            <button onclick="openIntelReport()" style="background: rgba(52, 152, 219, 0.15); border: 1px solid #3498db; color: #3498db;">🌑 Intel Lune</button>
+            <button onclick="setupDeadManSwitch()" style="background: rgba(142, 68, 173, 0.15); border: 1px solid #8e44ad; color: #8e44ad;">💀 Homme à Terre</button>
+            <button onclick="openIntelGallery()" style="grid-column: span 2; background: rgba(46, 204, 113, 0.15); border: 1px solid #2ecc71; color: #2ecc71;">📂 Ouvrir Galerie Intel</button>
+        </div>
+    </div>
+
+    <div id="gallery-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 90%; width: 500px;">
+            <h3 style="color: #2ecc71; border-color: #2ecc71; text-align: center;">📂 Base de Données Visuelle</h3>
+            <div id="gallery-grid" class="gallery-grid"></div>
+            <button class="btn-cancel" onclick="document.getElementById('gallery-modal').style.display='none'" style="margin-top: 15px; width: 100%;">Fermer la Galerie</button>
         </div>
     </div>
 
@@ -90,7 +124,7 @@
             <div id="moon-icon" style="font-size: 60px; margin: 10px 0;">--</div>
             <h4 id="moon-phase-name" style="margin-bottom: 10px;">Calcul en cours...</h4>
             <p id="moon-tactical-advice" style="font-size: 13px; color: #7f8c8d; background: #f9f9f9; padding: 10px; border-radius: 8px; font-style: italic;"></p>
-            <button class="btn-confirm" onclick="document.getElementById('intel-modal').style.display='none'" style="margin-top: 15px; width: 100%; background: #3498db;">Fermer le Rapport</button>
+            <button class="btn-confirm" onclick="document.getElementById('intel-modal').style.display='none'" style="margin-top: 15px; width: 100%; background: #3498db;">Fermer</button>
         </div>
     </div>
 
@@ -113,31 +147,6 @@
             <div class="input-group"><label>Date (optionnel)</label><input type="date" id="point-date"></div>
             <div class="input-group"><label>Équipe</label><div id="people-list"><input type="text" class="person-input" placeholder="Personne 1"></div><button type="button" class="btn-small" id="btn-add-person">+ Ajouter un membre</button></div>
             <div class="modal-actions"><button class="btn-cancel" id="btn-cancel">Annuler</button><button class="btn-confirm" id="btn-confirm">Valider</button></div>
-        </div>
-    </div>
-
-    <div id="sos-confirm-modal" class="modal-overlay">
-        <div class="modal-content" style="text-align: center; border: 3px solid #e74c3c; background: #fff;">
-            <h3 style="color: #e74c3c; border-bottom: none; margin-bottom: 5px; font-size: 20px;">🚨 ALERTE S.O.S 🚨</h3>
-            <p style="margin-bottom: 20px; font-size: 14px; color: #2c3e50; font-weight: bold;">
-                Envoyer un signal de détresse avec ta position exacte à toute l'équipe ?
-            </p>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-cancel" onclick="document.getElementById('sos-confirm-modal').style.display='none'" style="flex: 1; padding: 15px; font-size: 14px;">ANNULER</button>
-                <button class="btn-confirm" onclick="executeSOS()" style="flex: 1; background: #e74c3c; padding: 15px; font-size: 14px;">🚨 GO !</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="system-modal" class="modal-overlay">
-        <div class="modal-content" style="text-align: center; border: 2px solid #3498db;">
-            <h3 id="sys-modal-title" style="color: #3498db; border-bottom: none; margin-bottom: 5px;">Titre</h3>
-            <p id="sys-modal-desc" style="margin-bottom: 15px; font-size: 14px; color: #7f8c8d;"></p>
-            <input type="text" id="sys-modal-input" style="display:none; width:100%; padding:10px; border-radius:8px; border:1px solid #bdc3c7; margin-bottom:15px; text-align:center; font-weight:bold;">
-            <div style="display: flex; gap: 10px;">
-                <button id="sys-modal-cancel" class="btn-cancel" style="flex: 1; padding: 12px; font-size: 14px;">ANNULER</button>
-                <button id="sys-modal-confirm" class="btn-confirm" style="flex: 1; background: #3498db; padding: 12px; font-size: 14px;">VALIDER</button>
-            </div>
         </div>
     </div>
 
