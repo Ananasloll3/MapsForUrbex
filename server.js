@@ -32,14 +32,17 @@ io.on('connection', (socket) => {
     utilisateursConnectes++;
     logInfo(`Explorateur connecté. (En ligne : ${utilisateursConnectes})`);
 
-    // --- NOUVEAU : GESTION RADIO ET SOS ---
-    socket.on('chat_message', (msg) => {
-        io.emit('chat_message', msg); // Renvoie le message à tout le monde
-    });
+    socket.on('chat_message', (msg) => { io.emit('chat_message', msg); });
 
     socket.on('sos_alert', (data) => {
         logSuppr(`🚨 S.O.S DÉCLENCHÉ AUX COORDONNÉES : ${data.lat}, ${data.lng}`);
-        io.emit('sos_alert', data); // Alerte générale !
+        io.emit('sos_alert', data);
+    });
+
+    // NOUVEAU : GESTION DU PING TACTIQUE
+    socket.on('ping_tactique', (data) => {
+        logInfo(`📍 Ping tactique reçu : ${data.lat}, ${data.lng}`);
+        io.emit('ping_tactique', data); 
     });
 
     socket.on('disconnect', () => {

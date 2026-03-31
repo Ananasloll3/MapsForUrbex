@@ -1,5 +1,3 @@
-
-
 :root {
     --bg-dark: rgba(20, 25, 30, 0.9);
     --bg-light: rgba(255, 255, 255, 0.95);
@@ -13,54 +11,30 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* FIX iOS : Empêcher le scroll élastique et gérer la taille réelle */
 body, html {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #111;
-    width: 100%;
-    height: 100%;
-    height: 100dvh; /* Magie d'iOS/Android */
-    margin: 0;
-    padding: 0;
-    overflow: hidden; 
-    overscroll-behavior: none;
+    width: 100%; height: 100%; height: 100dvh; 
+    margin: 0; padding: 0; overflow: hidden; overscroll-behavior: none;
 }
 
-#map { 
-    width: 100%;
-    height: 100%;
-    z-index: 1; 
-}
+#map { width: 100%; height: 100%; z-index: 1; }
 
-/* =========================================
-   UI COMMUN (Bandeaux floutés)
-   ========================================= */
 .glass-panel {
-    background: var(--bg-light);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 12px;
+    background: var(--bg-light); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;
 }
 
-/* =========================================
-   TOP BAR (Statut & Toggle Radar)
-   ========================================= */
 .top-bar {
     position: absolute; top: env(safe-area-inset-top, 15px); left: 10px; right: 10px;
-    z-index: 1000; display: flex; justify-content: space-between; align-items: flex-start;
-    pointer-events: none; /* Laisse cliquer au travers s'il y a du vide */
+    z-index: 1000; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; 
 }
-
 .status-badge {
     background: var(--bg-light); color: var(--text-dark); pointer-events: auto;
     padding: 8px 12px; border-radius: 20px; font-weight: bold; font-size: 12px;
     backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 65%; 
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 65%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
 .btn-radar-toggle {
     background: var(--bg-dark); color: white; pointer-events: auto;
     border: none; padding: 8px 12px; border-radius: 20px; font-weight: bold; font-size: 12px;
@@ -77,19 +51,13 @@ body, html {
 .radar-panel.hidden { transform: scale(0.9); opacity: 0; pointer-events: none; }
 .filter-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;}
 
-/* =========================================
-   BARRE LATERALE (Outils Map)
-   ========================================= */
 .side-tools {
-    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-    z-index: 1000; display: flex; flex-direction: column; gap: 10px;
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px;
 }
-
 .tool-btn {
     width: 45px; height: 45px; border-radius: 12px; font-size: 20px;
     background: var(--bg-light); border: 2px solid transparent; color: var(--text-dark);
-    cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.2s;
-    display: flex; justify-content: center; align-items: center; 
+    cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.2s; display: flex; justify-content: center; align-items: center; 
     backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
 }
 .tool-btn:hover { background: #e0e0e0; }
@@ -97,111 +65,167 @@ body, html {
 .tool-btn.active-edit { background: #ebf5fb; border-color: #3498db; }
 .tool-btn.active-del { background: #fdedec; border-color: #e74c3c; }
 .tool-btn.active-measure { background: #f4f6f7; border-color: #95a5a6; }
+.panic-btn { border: 2px solid #34495e; } .panic-btn:hover { background: #c0392b; color: white; border-color: #e74c3c; }
 
-/* =========================================
-   DOCK INFERIEUR (Menu de Navigation)
-   ========================================= */
 .bottom-dock {
-    position: absolute; bottom: 0; left: 0; width: 100%;
-    z-index: 1500; background: var(--bg-dark); 
+    position: absolute; bottom: 0; left: 0; width: 100%; z-index: 1500; background: var(--bg-dark); 
     backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-    display: flex; justify-content: space-around; align-items: center;
-    padding: 10px 5px calc(10px + env(safe-area-inset-bottom)); /* GESTION ECRAN iOS/ANDROID */
+    display: flex; justify-content: space-around; align-items: center; padding: 10px 5px calc(10px + env(safe-area-inset-bottom));
     box-shadow: 0 -5px 20px rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.1);
 }
-
-.dock-btn {
-    background: transparent; border: none; color: #a4b0be;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    cursor: pointer; flex: 1; transition: 0.2s;
-}
+.dock-btn { background: transparent; border: none; color: #a4b0be; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex: 1; transition: 0.2s; }
 .dock-btn:hover, .dock-btn:active { color: white; transform: scale(1.05); }
-.dock-icon { font-size: 22px; }
-.dock-text { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-
-.sos-btn { color: #ff4757; }
-.sos-btn .dock-icon { background: rgba(255, 71, 87, 0.2); border-radius: 50%; padding: 5px; animation: pulseSOS 2s infinite; }
+.dock-icon { font-size: 22px; } .dock-text { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.sos-btn { color: #ff4757; } .sos-btn .dock-icon { background: rgba(255, 71, 87, 0.2); border-radius: 50%; padding: 5px; animation: pulseSOS 2s infinite; }
 @keyframes pulseSOS { 0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); } }
-
 .stealth-btn { color: #57606f; }
 
-/* =========================================
-   PANNEAUX D'ACTION (Cartes & Radio)
-   ========================================= */
 .action-panel {
-    position: absolute; bottom: calc(80px + env(safe-area-inset-bottom));
-    left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px;
-    background: var(--bg-dark); color: white; border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1400;
-    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
-    border: 1px solid rgba(255,255,255,0.1);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+    position: absolute; bottom: calc(80px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px;
+    background: var(--bg-dark); color: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1400;
+    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
 }
 .action-panel.hidden { transform: translate(-50%, 20px); opacity: 0; pointer-events: none; }
-
-/* Menu Cartes */
-#layers-menu { padding: 15px; text-align: center; }
-#layers-menu h4 { margin-bottom: 15px; font-size: 14px; opacity: 0.8; }
+#layers-menu { padding: 15px; text-align: center; } #layers-menu h4 { margin-bottom: 15px; font-size: 14px; opacity: 0.8; }
 .layer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.layer-grid button {
-    background: rgba(255,255,255,0.1); border: none; color: white;
-    padding: 12px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer;
-}
+.layer-grid button { background: rgba(255,255,255,0.1); border: none; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; }
 .layer-grid button:active { background: var(--primary); }
 
-/* Panneau Radio */
-.radio-header {
-    background: rgba(0,0,0,0.3); padding: 12px; text-align: center; cursor: pointer;
-    border-radius: 15px 15px 0 0; font-weight: bold; font-size: 14px;
-    display: flex; justify-content: space-between; align-items: center;
-}
+.radio-header { background: rgba(0,0,0,0.3); padding: 12px; text-align: center; cursor: pointer; border-radius: 15px 15px 0 0; font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
 .radio-messages { height: 180px; overflow-y: auto; padding: 10px; font-size: 13px; display: flex; flex-direction: column; gap: 8px; font-family: monospace; }
 .radio-input-container { display: flex; border-top: 1px solid rgba(255,255,255,0.1); }
 .radio-input-container input { flex: 1; background: transparent; border: none; color: white; padding: 12px; outline: none; font-size: 14px; }
 .radio-input-container button { background: var(--primary); border: none; color: white; padding: 0 20px; cursor: pointer; border-radius: 0 0 15px 0; font-weight: bold; }
-.msg-line { background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; word-break: break-word; }
-.msg-time { color: #f39c12; margin-right: 5px; font-weight: bold; }
+.msg-line { background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; word-break: break-word; } .msg-time { color: #f39c12; margin-right: 5px; font-weight: bold; }
 
-/* =========================================
-   PINS, POPUPS & MODALES
-   ========================================= */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 3000; justify-content: center; align-items: center; padding: 20px; }
 .modal-content { background: white; padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-.input-group label { font-size: 13px; font-weight: bold; color: #7f8c8d; margin-bottom: 2px;}
-.input-group input, select { padding: 10px; border: 1px solid #bdc3c7; border-radius: 8px; font-size: 14px; width: 100%; background: #f9f9f9; outline: none;}
-.modal-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 5px; }
-.btn-cancel, .btn-confirm { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer;}
-.btn-cancel { background: #ecf0f1; color: #7f8c8d; }
-.btn-confirm { background: var(--success); color: white; }
+.input-group label { font-size: 13px; font-weight: bold; color: #7f8c8d; margin-bottom: 2px;} .input-group input, select { padding: 10px; border: 1px solid #bdc3c7; border-radius: 8px; font-size: 14px; width: 100%; background: #f9f9f9; outline: none;}
+.modal-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 5px; } .btn-cancel, .btn-confirm { flex: 1; padding: 12px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer;} .btn-cancel { background: #ecf0f1; color: #7f8c8d; } .btn-confirm { background: var(--success); color: white; }
 
-.custom-popup .leaflet-popup-content-wrapper { background: var(--bg-dark); color: #ecf0f1; border-radius: 12px; padding: 5px; border: 1px solid rgba(255,255,255,0.1);}
-.custom-popup .leaflet-popup-tip { background: var(--bg-dark); }
+.custom-popup .leaflet-popup-content-wrapper { background: var(--bg-dark); color: #ecf0f1; border-radius: 12px; padding: 5px; border: 1px solid rgba(255,255,255,0.1);} .custom-popup .leaflet-popup-tip { background: var(--bg-dark); }
 .urbex-pin-container { display: flex; justify-content: center; align-items: flex-end; width: 100%; height: 100%; }
 .urbex-pin { width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid white; box-shadow: -3px 3px 10px rgba(0,0,0,0.4); }
-.bg-accessible { background: linear-gradient(135deg, #2ecc71, #27ae60); }
-.bg-garde { background: linear-gradient(135deg, #f1c40f, #f39c12); }
-.bg-dangereux { background: linear-gradient(135deg, #e74c3c, #c0392b); }
-.bg-detruit { background: linear-gradient(135deg, #34495e, #2c3e50); }
+.bg-accessible { background: linear-gradient(135deg, #2ecc71, #27ae60); } .bg-garde { background: linear-gradient(135deg, #f1c40f, #f39c12); } .bg-dangereux { background: linear-gradient(135deg, #e74c3c, #c0392b); } .bg-detruit { background: linear-gradient(135deg, #34495e, #2c3e50); }
 
-/* GPS Pulse & Ecrans speciaux */
 .gps-pulse-container { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; }
 .gps-pulse-dot { width: 14px; height: 14px; background-color: #3498db; border-radius: 50%; border: 2px solid white; z-index: 2; }
 .gps-pulse-ring { position: absolute; width: 40px; height: 40px; background-color: rgba(52, 152, 219, 0.4); border-radius: 50%; animation: pulse 1.5s infinite ease-out; z-index: 1; }
-@keyframes pulse { 0% { transform: scale(0.3); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
 
-.sos-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(231, 76, 60, 0.3); z-index: 9999; pointer-events: none; display: none; animation: flashSOS 0.4s infinite alternate; }
-@keyframes flashSOS { from { opacity: 0.1; } to { opacity: 0.6; } }
+.sos-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(231, 76, 60, 0.3); z-index: 9999; pointer-events: none; display: none; animation: flashSOS 0.4s infinite alternate; } @keyframes flashSOS { from { opacity: 0.1; } to { opacity: 0.6; } }
 #stealth-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #000; z-index: 99999; }
 
-/* 🦇 MODE VISION NOCTURNE */
+.offline-banner { position: absolute; top: calc(env(safe-area-inset-top, 15px) + 50px); left: 50%; transform: translateX(-50%); background: rgba(231, 76, 60, 0.95); color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 9999; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.5); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; gap: 8px; white-space: nowrap; animation: pulseOffline 2s infinite; } .offline-banner.hidden { display: none; } @keyframes pulseOffline { 0% { opacity: 0.8; } 50% { opacity: 1; box-shadow: 0 0 20px rgba(231,76,60,0.8); } 100% { opacity: 0.8; } }
+.dock-btn.locked { color: #2ecc71; } .dock-btn.locked .dock-icon { animation: glowGPS 1.5s infinite alternate; } @keyframes glowGPS { from { text-shadow: 0 0 5px #2ecc71; } to { text-shadow: 0 0 15px #2ecc71; transform: scale(1.1); } }
+.ping-pulse-wrapper { display: flex; justify-content: center; align-items: center; } .ping-tactique-ring { width: 60px; height: 60px; background-color: rgba(52, 152, 219, 0.4); border-radius: 50%; border: 2px solid #3498db; animation: pingTactiqueAnim 1.5s infinite ease-out; } @keyframes pingTactiqueAnim { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+
 body.dark-mode .status-badge, body.dark-mode .radar-panel, body.dark-mode .tool-btn { background: rgba(20, 0, 0, 0.9); color: #e74c3c; border-color: #e74c3c; }
 body.dark-mode .tool-btn.active-add, body.dark-mode .tool-btn.active-edit, body.dark-mode .tool-btn.active-del, body.dark-mode .tool-btn.active-measure { background: rgba(231, 76, 60, 0.3); }
-body.dark-mode .bottom-dock { border-top-color: #e74c3c; }
-body.dark-mode .dock-btn { color: #c0392b; }
-body.dark-mode .dock-btn:hover { color: #e74c3c; }
-body.dark-mode .modal-content { background: #111; color: #e74c3c; border: 1px solid #e74c3c; }
-body.dark-mode input, body.dark-mode select { background: #222; color: #e74c3c; border-color: #e74c3c; }
+body.dark-mode .bottom-dock { border-top-color: #e74c3c; } body.dark-mode .dock-btn { color: #c0392b; } body.dark-mode .dock-btn:hover { color: #e74c3c; }
+body.dark-mode .modal-content { background: #111; color: #e74c3c; border: 1px solid #e74c3c; } body.dark-mode input, body.dark-mode select { background: #222; color: #e74c3c; border-color: #e74c3c; }
 
-/* Cacher le logo Leaflet pour plus d'immersion */
-.leaflet-control-attribution { display: none !important; }
-.leaflet-control-zoom { display: none !important; }
+.leaflet-control-attribution { display: none !important; } .leaflet-control-zoom { display: none !important; }
+
+/* 🚨 NOUVEAU : STYLE DE L'INTERFACE PANIC "RandoCartes" */
+#fake-ui {
+    position: absolute; top: 0; left: 0; width: 100%; z-index: 5000;
+}
+.fake-header {
+    background: #27ae60; color: white; padding: env(safe-area-inset-top, 20px) 15px 15px 15px;
+    font-size: 18px; font-weight: bold; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    user-select: none;
+}
+
+/* TOUT TON CSS PRECEDENT ICI... et ajoute ceci tout en bas : */
+
+/* =========================================
+   NOUVEAU : FILTRE INFRAROUGE (RED MODE)
+   ========================================= */
+body.red-mode {
+    /* Magie CSS : Transforme toutes les couleurs du site en nuances de rouge sombre */
+    filter: sepia(100%) hue-rotate(315deg) saturate(600%) brightness(0.7) contrast(1.3) !important;
+    background-color: #000 !important;
+}
+
+/* =========================================
+   NOUVEAU : GHOST RADIO (MESSAGES EPHEMERES)
+   ========================================= */
+.msg-line {
+    transition: all 0.5s ease;
+}
+
+.msg-line.ghost-out {
+    animation: fadeOutGhost 1s forwards;
+}
+
+@keyframes fadeOutGhost {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(50px); height: 0; padding: 0; margin: 0; overflow: hidden; }
+}
+
+/* Ajustement pour que le chrono et le badge rentrent bien en haut */
+.status-badge {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* =========================================
+   NOUVEAUTÉS MARQUEURS (NOTES, STREETVIEW, PATROUILLE)
+   ========================================= */
+
+/* Champ Notes Tactiques */
+textarea { 
+    padding: 10px; border: 1px solid #bdc3c7; border-radius: 8px; 
+    font-size: 14px; width: 100%; background: #f9f9f9; outline: none; 
+    resize: vertical; font-family: inherit; 
+}
+body.dark-mode textarea { background: #222; color: #e74c3c; border-color: #e74c3c; }
+
+/* Bouton Patrouille Actif */
+.tool-btn.active-patrol { background: #fdedec; border-color: #9b59b6; color: #8e44ad; }
+
+/* Marqueur Gyrophare (Patrouille) */
+.bg-patrol { 
+    background: linear-gradient(135deg, #2980b9, #8e44ad); 
+    animation: flashPolice 1s infinite alternate; 
+    border-color: #fff !important;
+}
+@keyframes flashPolice { 
+    0% { box-shadow: 0 0 15px #2980b9, inset 0 0 10px #2980b9; } 
+    100% { box-shadow: 0 0 25px #e74c3c, inset 0 0 10px #e74c3c; background: linear-gradient(135deg, #e74c3c, #c0392b); } 
+}
+
+/* Bouton Street View dans la popup */
+.btn-streetview { 
+    background: #34495e; color: white; border: none; padding: 8px 10px; 
+    border-radius: 6px; font-size: 12px; cursor: pointer; width: 100%; 
+    margin-top: 10px; font-weight: bold; transition: 0.2s; display: flex; justify-content: center; gap: 5px;
+}
+.btn-streetview:hover { background: #1abc9c; }
+body.dark-mode .btn-streetview { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c;}
+body.dark-mode .btn-streetview:hover { background: #e74c3c; color: #111; }
+
+/* =========================================
+   NOUVEAU : V4 SURVIE GLOBALE
+   ========================================= */
+
+/* HUD Tactique GPS */
+.tactical-hud {
+    position: absolute; top: calc(env(safe-area-inset-top, 15px) + 50px);
+    left: 50%; transform: translateX(-50%); width: 90%; max-width: 350px;
+    background: rgba(10, 15, 20, 0.85); border: 1px solid #3498db;
+    border-radius: 12px; padding: 10px 15px; color: #ecf0f1;
+    font-family: monospace; font-size: 13px; z-index: 998;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
+    backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+    pointer-events: none;
+}
+.tactical-hud.hidden { display: none; }
+.hud-row { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 3px; }
+.hud-row:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+.hud-row strong { color: #3498db; }
+body.red-mode .tactical-hud { border-color: #e74c3c; box-shadow: 0 0 15px rgba(231, 76, 60, 0.3); }
+body.red-mode .hud-row strong { color: #e74c3c; }
+
+/* Couleur spécifique pour le point d'extraction */
+.bg-extraction { background: linear-gradient(135deg, #3498db, #2980b9); border: 2px solid #fff; }
+.badge-extraction { background-color: #3498db; }

@@ -8,19 +8,40 @@
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <div id="fake-ui" class="hidden">
+        <div class="fake-header" ondblclick="disablePanic()">
+            🏞️ RandoCartes - Sentiers Publics
+        </div>
+    </div>
+
     <div id="sos-screen" class="sos-overlay"></div>
     <div id="stealth-screen" style="display:none;"></div>
+    
+    <div id="offline-banner" class="offline-banner hidden">
+        ⚠️ ZONE BLANCHE : Signal Perdu. S.O.S et Radio inactifs !
+    </div>
+
+    <div id="tactical-hud" class="tactical-hud hidden">
+        <div class="hud-row"><span>🛰️ LAT/LNG:</span> <strong id="hud-coords">Recherche...</strong></div>
+        <div class="hud-row"><span>🎯 PRÉCISION:</span> <strong id="hud-acc">-- m</strong></div>
+        <div class="hud-row"><span>🏃 VITESSE:</span> <strong id="hud-speed">-- km/h</strong></div>
+    </div>
 
     <div class="top-bar">
-        <div class="status-badge" id="status-text">👋 Sélectionne un outil</div>
+        <div style="display: flex; gap: 8px; max-width: 70%;">
+            <div class="status-badge" id="status-text">👋 Sélectionne un outil</div>
+            <div class="status-badge hidden" id="extraction-timer" onclick="startTimerPrompt()" style="cursor:pointer; background: #f39c12; color: #fff; min-width: 75px; text-align: center;">⏱️ 00:00</div>
+        </div>
         <button class="btn-radar-toggle" onclick="toggleRadar()">📡 Radar <span>🔽</span></button>
     </div>
 
     <div class="radar-panel hidden" id="radar-content">
+        <label class="filter-label"><input type="checkbox" class="filter-cb" value="extraction" checked> 🚗 Extraction / Parking</label>
         <label class="filter-label"><input type="checkbox" class="filter-cb" value="accessible" checked> 🟢 Accessibles</label>
         <label class="filter-label"><input type="checkbox" class="filter-cb" value="garde" checked> 🟠 Gardés / Risqués</label>
         <label class="filter-label"><input type="checkbox" class="filter-cb" value="dangereux" checked> 🔴 Dangereux</label>
         <label class="filter-label"><input type="checkbox" class="filter-cb" value="detruit" checked> ⚫ Détruits / Murés</label>
+        <label class="filter-label"><input type="checkbox" class="filter-cb" value="patrol" checked> 🚨 Patrouilles actives</label>
     </div>
 
     <div class="side-tools">
@@ -28,6 +49,10 @@
         <button id="btn-edit" class="tool-btn" onclick="toggleTool('edit')" title="Modifier">✏️</button>
         <button id="btn-del" class="tool-btn" onclick="toggleTool('delete')" title="Supprimer">🗑️</button>
         <button id="btn-measure" class="tool-btn" onclick="toggleTool('measure')" title="Mesurer">📏</button>
+        <button id="btn-patrol" class="tool-btn" onclick="toggleTool('patrol')" title="Signaler Sécurité">👮</button>
+        
+        <button id="btn-export" class="tool-btn" onclick="exportGPX()" title="Exporter en GPX" style="margin-top: 15px;">💾</button>
+        <button id="btn-panic" class="tool-btn panic-btn" onclick="triggerPanic()" title="Anti-Sécurité" style="margin-top: 10px;">🚔</button>
     </div>
 
     <div id="layers-menu" class="action-panel hidden">
@@ -38,10 +63,19 @@
             <button onclick="setMapStyle('topo')">⛰️ Topo</button>
             <button onclick="setMapStyle('nuit')">🦇 Nuit</button>
         </div>
+        
+        <h4 style="margin-top: 15px; font-size: 13px; color: #7f8c8d; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">Outils Spéciaux</h4>
+        <div class="layer-grid">
+            <button onclick="toggleRedMode()" id="btn-red-toggle" style="background: rgba(231, 76, 60, 0.15); border: 1px solid #e74c3c; color: #e74c3c;">🔴 Filtre Infrarouge</button>
+            <button onclick="startTimerPrompt()" style="background: rgba(243, 156, 18, 0.15); border: 1px solid #f39c12; color: #f39c12;">⏱️ Lancer Chrono</button>
+        </div>
     </div>
 
     <div id="radio-panel" class="action-panel hidden">
         <div class="radio-header" onclick="toggleRadio()">📻 Canal Équipe <span>⬇️</span></div>
+        <div style="background: rgba(0,0,0,0.5); padding: 8px; text-align: center; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <label style="cursor: pointer; color: #bdc3c7;"><input type="checkbox" id="ghost-mode-cb" style="margin-right: 5px;"> 👻 Mode Éphémère (30s)</label>
+        </div>
         <div class="radio-messages" id="radio-messages"></div>
         <div class="radio-input-container">
             <input type="text" id="radio-input" placeholder="Message..." onkeypress="if(event.key === 'Enter') sendRadio()">
@@ -53,7 +87,7 @@
         <button class="dock-btn" onclick="toggleLayersMenu()">
             <span class="dock-icon">🗺️</span><span class="dock-text">Cartes</span>
         </button>
-        <button class="dock-btn" onclick="localiserMoi()">
+        <button class="dock-btn" id="btn-gps-dock" onclick="localiserMoi()">
             <span class="dock-icon">🎯</span><span class="dock-text">GPS</span>
         </button>
         <button class="dock-btn" onclick="toggleRadio()">
@@ -74,11 +108,16 @@
             <div class="input-group">
                 <label>Statut</label>
                 <select id="point-status">
+                    <option value="extraction">🚗 Point d'Extraction / Parking</option>
                     <option value="accessible">🟢 Accessible / Ouvert</option>
                     <option value="garde">🟠 Gardé / Caméras</option>
                     <option value="dangereux">🔴 Dangereux / Ruine</option>
                     <option value="detruit">⚫ Détruit / Muré</option>
                 </select>
+            </div>
+            <div class="input-group">
+                <label>Renseignement (Notes tactiques)</label>
+                <textarea id="point-notes" rows="3" placeholder="Ex: Véhicule garé face à la forêt..."></textarea>
             </div>
             <div class="input-group"><label>Date (optionnel)</label><input type="date" id="point-date"></div>
             <div class="input-group">
