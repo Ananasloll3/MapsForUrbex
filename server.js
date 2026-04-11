@@ -2,13 +2,23 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const https = require('https'); // 🟢 AJOUT : Le module HTTPS
 const { Server } = require('socket.io');
 
 const app = express();
-const server = http.createServer(app);
+
+// 🟢 CONFIGURATION SSL : Chargement des certificats copiés dans ton dossier
+const sslOptions = {
+    key: fs.readFileSync('./privkey.pem'),
+    cert: fs.readFileSync('./fullchain.pem')
+};
+
+// 🟢 MODIFICATION : On utilise https.createServer au lieu de http
+const server = https.createServer(sslOptions, app);
 const io = new Server(server);
 
-const PORT = 3000;
+// 🟢 MODIFICATION : Le port HTTPS standard est le 443
+const PORT_HTTPS = 443; 
 const DATA_FILE = path.join(__dirname, 'data.json');
 const CONFIG_FILE = path.join(__dirname, 'config.json');
 
@@ -35,7 +45,6 @@ function getClientIp(reqOrSocket) {
 // 📁 GESTION DE LA CONFIGURATION (Catégories)
 function lireConfig() {
     if (!fs.existsSync(CONFIG_FILE)) {
-        // Création de la configuration par défaut si elle n'existe pas
         const defaultConfig = {
             categories: ["Hôpital / Asile", "Usine / Industriel", "Château / Manoir", "Bunker / Militaire", "Souterrain / Catacombes", "Résidentiel", "Religieux", "Autre"]
         };
@@ -67,9 +76,7 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => { utilisateursConnectes--; logInfo(`Agent déconnecté [${ip}].`); delete squadPlayers[socket.id]; io.emit('squad_update', squadPlayers); });
 });
 
-// 📁 NOUVELLE ROUTE : Envoi de la configuration au client
 app.get('/api/config', (req, res) => { res.json(lireConfig()); });
-
 app.get('/api/markers', (req, res) => { res.json(lireDonnees()); });
 app.post('/api/markers', (req, res) => {
     const ip = getClientIp(req); const points = lireDonnees(); const nouveauPoint = { id: Date.now().toString(), ...req.body };
@@ -87,4 +94,15 @@ app.delete('/api/markers/:id', (req, res) => {
     res.json({ success: true });
 });
 
-server.listen(PORT, () => { console.log(`\x1b[45m\x1b[30m 🌍 Serveur Command Center lancé sur http://localhost:${PORT} \x1b[0m\n`); });
+// 🟢 AJOUT : Serveur HTTP "miroir" pour forcer la redirection vers HTTPS
+http.createServer((req, res) => {
+    res.writeHead(301, { "Location": "https://ananasloll3.online" + req.url });
+    res.end();
+}).listen(80, () => {
+    console.log(`\x1b[43m\x1b[30m 🔄 Redirection HTTP -> HTTPS activée sur le port 80 \x1b[0m`);
+});
+
+// 🟢 MODIFICATION : Lancement du serveur principal sur le port HTTPS (443)
+server.listen(PORT_HTTPS, () => { 
+    console.log(`\x1b[42m\x1b[30m 🌍 Serveur Command Center lancé sur https://ananasloll3.online \x1b[0m\n`); 
+});
