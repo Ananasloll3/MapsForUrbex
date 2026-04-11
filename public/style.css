@@ -18,6 +18,10 @@ body, html {
     margin: 0; padding: 0; overflow: hidden; overscroll-behavior: none;
 }
 
+.hidden {
+    display: none !important;
+}
+
 #map { width: 100%; height: 100%; z-index: 1; }
 
 .glass-panel {
@@ -386,3 +390,35 @@ body.dark-mode .gallery-item div { color: #e74c3c; }
 @keyframes crawl {
     to { stroke-dashoffset: -12; }
 }
+
+/* =========================================
+   NOUVEAUTÉS V10 : ARCHIVES & ETATS
+   ========================================= */
+
+/* Radar Headers */
+#radar-content h5 {
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 5px;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* Couleurs des nouveaux Types de points */
+.bg-entry { background: linear-gradient(135deg, #9b59b6, #8e44ad); border: 2px solid #fff; }
+
+/* Badges d'État de conservation */
+.badge-intact { background-color: #1abc9c; color: white; }
+.badge-vandalise { background-color: #f39c12; color: white; }
+.badge-renovation { background-color: #e67e22; color: white; }
+.badge-demoli { background-color: #34495e; color: white; }
+
+/* Style du conteneur d'histoire dans la popup */
+.popup-history-box {
+    background: rgba(0,0,0,0.1); 
+    padding: 8px; 
+    border-radius: 6px; 
+    font-size: 11px; 
+    margin-top: 8px; 
+    border-left: 3px solid #8e44ad;
+}
+body.dark-mode .popup-history-box { background: #222; color: #ecf0f1; }
