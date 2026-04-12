@@ -422,3 +422,19 @@ body.dark-mode .gallery-item div { color: #e74c3c; }
     border-left: 3px solid #8e44ad;
 }
 body.dark-mode .popup-history-box { background: #222; color: #ecf0f1; }
+
+/* Dans style.css */
+#btn-doc {
+    background: rgba(52, 152, 219, 0.2); /* Bleu translucide */
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#btn-doc:hover {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 0 10px var(--primary);
+}

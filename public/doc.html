@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manuel de Terrain - Command Center</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        :root {
+            --bg-dark: #14191e;
+            --primary: #3498db;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --text-light: #ecf0f1;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background-color: #111;
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .doc-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header img { width: 50px; height: 50px; }
+
+        h1 { margin: 0; font-size: 2rem; text-transform: uppercase; letter-spacing: 2px; }
+        h2 { color: var(--primary); margin-top: 40px; border-left: 4px solid var(--primary); padding-left: 15px; }
+        
+        .feature-box {
+            background: var(--glass);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid #555;
+        }
+        
+        .feature-box.danger { border-left-color: var(--danger); }
+        .feature-box.success { border-left-color: var(--success); }
+        .feature-box.warning { border-left-color: var(--warning); }
+
+        .key {
+            background: rgba(0,0,0,0.5);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            color: var(--warning);
+            font-weight: bold;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+        .back-link:hover { color: var(--text-light); transform: translateX(-5px); }
+    </style>
+</head>
+<body>
+
+    <div class="doc-container">
+        <a href="/" class="back-link">← RETOUR À LA CARTE</a>
+        
+        <div class="header">
+            <img src="/favicon.png" alt="Logo">
+            <h1>Manuel de l'Agent</h1>
+        </div>
+
+        <p>Bienvenue sur le <strong>Command Center</strong>. Cette interface est votre outil de survie et de coordination sur le terrain. Lisez attentivement ces instructions avant votre première expédition.</p>
+
+        <h2>🗺️ 1. Cartographie et Navigation</h2>
+        <div class="feature-box">
+            <p>La carte est votre atout principal. Vous pouvez changer le style de la carte selon vos besoins :</p>
+            <ul>
+                <li><strong>Classique :</strong> Idéal pour les repérages de jour.</li>
+                <li><strong>Satellite :</strong> Parfait pour repérer les toits, les entrées cachées et la végétation.</li>
+                <li><strong>Sombre (Dark) :</strong> Mode tactique de nuit pour ne pas vous éblouir.</li>
+                <li><strong>Topographique :</strong> Utile pour les spots en forêt ou montagneux.</li>
+            </ul>
+        </div>
+
+        <h2>📍 2. Signaler un Spot (Ajouter un marqueur)</h2>
+        <div class="feature-box success">
+            <p>Pour enregistrer une nouvelle découverte dans la base de données de l'escouade :</p>
+            <ol>
+                <li><strong>Cliquez n'importe où</strong> sur la carte à l'endroit exact du lieu.</li>
+                <li>Remplissez le rapport : Nom du lieu, Type (Hôpital, Usine, etc.), et le niveau de Risque.</li>
+                <li><strong>Preuve Visuelle :</strong> Vous pouvez activer votre appareil photo en direct pour y joindre une image du lieu ou d'un point d'accès.</li>
+                <li>Cliquez sur <strong>Enregistrer</strong>. Le point apparaîtra instantanément sur la carte de tous vos alliés.</li>
+            </ol>
+        </div>
+
+        <h2>📡 3. Communication & Escouade</h2>
+        <div class="feature-box">
+            <p>Le système est synchronisé en temps réel avec tous les agents connectés.</p>
+            <ul>
+                <li><strong>Radio :</strong> Utilisez le canal de chat pour communiquer silencieusement.</li>
+                <li><strong>Traces GPS :</strong> Les déplacements de vos alliés sont visibles sur la carte (lignes en pointillés).</li>
+                <li><strong>Mode Hors Ligne :</strong> Si vous entrez dans une "Zone Blanche" sans réseau (ex: sous-sol), une bannière jaune vous avertira que vos communications sont coupées.</li>
+            </ul>
+        </div>
+
+        <h2>🚨 4. Protocoles d'Urgence</h2>
+        
+        <div class="feature-box danger">
+            <h3>Bouton S.O.S</h3>
+            <p>En cas de danger immédiat (blessure grave, rencontre hostile, effondrement) :</p>
+            <p>Pressez le bouton <strong>S.O.S</strong>. Une alerte visuelle et sonore massive sera envoyée à tous les agents connectés avec vos coordonnées GPS exactes.</p>
+        </div>
+
+        <div class="feature-box warning">
+            <h3>Mode Discrétion (Stealth / Fake UI)</h3>
+            <p>Si vous êtes interpellé par des vigiles ou les forces de l'ordre, vous devez protéger les données de l'escouade :</p>
+            <p>Activez le <strong>Mode Discrétion</strong>. L'application se transformera instantanément en une fausse application inoffensive de randonnée pédestre (<i>"RandoCartes - Sentiers Publics"</i>).</p>
+            <p>👉 <i>Pour désactiver la fausse application et revenir au Command Center, faites un <strong>Double-Clic</strong> sur la barre de titre.</i></p>
+        </div>
+
+        <div class="feature-box">
+            <h3>Caméra NVG (Night Vision)</h3>
+            <p>Si vous perdez votre lampe torche, vous pouvez activer le bouton <strong>NVG</strong>. Il allumera la caméra de votre téléphone avec un filtre amplificateur de lumière (vert) pour vous aider à y voir dans la pénombre tout en gardant les mains libres.</p>
+        </div>
+
+        <p style="margin-top:40px; text-align:center; opacity:0.5; font-size:0.8rem;">
+            Restez prudents. Ne laissez aucune trace. Prenez seulement des photos.
+        </p>
+    </div>
+
+</body>
+</html>
