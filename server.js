@@ -18,7 +18,8 @@ const server = https.createServer(sslOptions, app);
 const io = new Server(server);
 
 // 🟢 MODIFICATION : Le port HTTPS standard est le 443
-const PORT_HTTPS = 443; 
+const PORT_HTTPS = process.env.APP_HTTPS_PORT || 443; 
+const PORT_HTTP= process.env.APP_HTTP_PORT || 80;
 const DATA_FILE = path.join(__dirname, 'data.json');
 const CONFIG_FILE = path.join(__dirname, 'config.json');
 
@@ -98,7 +99,7 @@ app.delete('/api/markers/:id', (req, res) => {
 http.createServer((req, res) => {
     res.writeHead(301, { "Location": "https://ananasloll3.online" + req.url });
     res.end();
-}).listen(80, () => {
+}).listen(PORT_HTTP, () => {
     console.log(`\x1b[43m\x1b[30m 🔄 Redirection HTTP -> HTTPS activée sur le port 80 \x1b[0m`);
 });
 
