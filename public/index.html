@@ -4,120 +4,153 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MapsForUrbex - Command Center</title>
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
     <link rel="stylesheet" href="style.css" />
-    
     <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body>
     <video id="nvg-camera" autoplay playsinline class="hidden"></video>
     <div id="nvg-overlay" class="hidden">
-        <div class="nvg-crosshair">+</div>
-        <div class="nvg-text">NVG ACTIVE - REC 🔴</div>
-        <button class="nvg-close" onclick="toggleNVG()">✖ FERMER NVG</button>
+        <div class="nvg-crosshair">+</div><div class="nvg-text">NVG ACTIVE - REC 🔴</div><button class="nvg-close" onclick="toggleNVG()">✖ FERMER NVG</button>
     </div>
 
-    <div id="fake-ui" class="hidden">
-        <div class="fake-header" ondblclick="disablePanic()">🏞️ RandoCartes - Sentiers Publics</div>
-    </div>
-
+    <div id="fake-ui" class="hidden"><div class="fake-header" ondblclick="disablePanic()">🏞️ RandoCartes - Sentiers Publics</div></div>
     <div id="sos-screen" class="sos-overlay"></div>
     <div id="stealth-screen" style="display:none;"></div>
     <div id="offline-banner" class="offline-banner hidden">⚠️ ZONE BLANCHE : Signal Perdu. S.O.S et Radio inactifs !</div>
 
-    <div class="main-interface">
-        <div id="map"></div>
+    <div id="system-modal" class="modal-overlay"><div class="modal-content" style="text-align: center; border: 2px solid #3498db;"><h3 id="sys-modal-title" style="color: #3498db; border-bottom: none; margin-bottom: 5px;">Titre</h3><p id="sys-modal-desc" style="margin-bottom: 15px; font-size: 14px; color: #7f8c8d;"></p><input type="text" id="sys-modal-input" style="display:none; width:100%; padding:10px; border-radius:8px; border:1px solid #bdc3c7; margin-bottom:15px; text-align:center; font-weight:bold;"><div style="display: flex; gap: 10px;"><button id="sys-modal-cancel" class="btn-cancel" style="flex: 1; padding: 12px; font-size: 14px;">ANNULER</button><button id="sys-modal-confirm" class="btn-confirm" style="flex: 1; background: #3498db; padding: 12px; font-size: 14px;">VALIDER</button></div></div></div>
+    <div id="sos-confirm-modal" class="modal-overlay"><div class="modal-content" style="text-align: center; border: 3px solid #e74c3c; background: #fff;"><h3 style="color: #e74c3c; border-bottom: none; margin-bottom: 5px; font-size: 20px;">🚨 ALERTE S.O.S 🚨</h3><p style="margin-bottom: 20px; font-size: 14px; color: #2c3e50; font-weight: bold;">Envoyer un signal de détresse avec ta position exacte à l'équipe ?</p><div style="display: flex; gap: 10px;"><button class="btn-cancel" onclick="document.getElementById('sos-confirm-modal').style.display='none'" style="flex: 1; padding: 15px; font-size: 14px;">ANNULER</button><button class="btn-confirm" onclick="executeSOS()" style="flex: 1; background: #e74c3c; padding: 15px; font-size: 14px;">🚨 GO !</button></div></div></div>
 
-        <div class="controls-panel">
-            <button id="btn-measure" class="btn-tool" title="Mesurer distance">📏</button>
-            <button id="btn-nvg" class="btn-tool" onclick="toggleNVG()" title="Vision Nocturne">🌙 NVG</button>
-            
-            <button id="btn-doc" class="btn-tool" onclick="window.location.href='/doc'" title="Documentation" style="background: rgba(52, 152, 219, 0.3); border: 1px solid #3498db; color: #3498db; font-weight: bold;">
-                📖 DOC
-            </button>
-            
-            <button id="btn-sos" class="btn-sos" onclick="triggerSOS()">🚨 S.O.S</button>
-        </div>
+    <div id="tactical-hud" class="tactical-hud hidden"><div class="hud-row"><span>🛰️ LAT/LNG:</span> <strong id="hud-coords">Recherche...</strong></div><div class="hud-row"><span>🎯 PRÉCISION:</span> <strong id="hud-acc">-- m</strong></div><div class="hud-row"><span>🏃 VITESSE:</span> <strong id="hud-speed">-- km/h</strong></div><div class="hud-row hidden" id="hud-target-row"><span>🧭 CAP CIBLE:</span> <strong id="hud-bearing" style="color:#e74c3c;">-- °</strong></div></div>
 
-        <div class="layers-panel">
-            <button onclick="changeMapStyle('classique')">Classique</button>
-            <button onclick="changeMapStyle('satellite')">Satellite</button>
-            <button onclick="changeMapStyle('sombre')">Sombre</button>
-            <button onclick="changeMapStyle('topo')">Topo</button>
+    <div class="top-bar">
+        <div style="display: flex; gap: 5px; max-width: 75%; flex-wrap: wrap;">
+            <div class="status-badge" id="status-text">👋 Outils</div>
+            <div class="status-badge hidden" id="extraction-timer" onclick="cancelExtractionTimer()" style="cursor:pointer; background: #f39c12; color: #fff; min-width: 60px; text-align: center;">⏱️ 00:00</div>
+            <div class="status-badge hidden" id="deadman-timer" onclick="cancelDeadManSwitch()" style="cursor:pointer; background: #8e44ad; color: #fff; min-width: 60px; text-align: center; animation: pulse 2s infinite;">💀 00:00</div>
         </div>
-
-        <div class="chat-panel" id="chat-panel">
-            <div class="chat-header">📡 RADIO ESCUADRA</div>
-            <div id="chat-messages"></div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Message radio...">
-                <button id="btn-send-chat">OK</button>
-            </div>
-        </div>
-
-        <div class="radar-panel" id="radar-panel">
-            <div class="radar-header">🛰️ RADAR TACTIQUE</div>
-            <div id="radar-content"></div>
-        </div>
+        <button class="btn-radar-toggle" onclick="toggleRadar()">📡 Radar <span>🔽</span></button>
     </div>
 
-    <div id="modal-point" class="modal hidden">
+    <div class="radar-panel hidden" id="radar-content" style="max-height: 60vh; overflow-y: auto;">
+        <h5 style="margin-top:0; color:#3498db;">Types de Points</h5>
+        <label class="filter-label"><input type="checkbox" class="filter-cb" data-filter-type="type" value="spot" checked> 📍 Spots à explorer</label>
+        <label class="filter-label"><input type="checkbox" class="filter-cb" data-filter-type="type" value="entry" checked> 🚪 Points d'Entrée</label>
+        <label class="filter-label"><input type="checkbox" class="filter-cb" data-filter-type="type" value="parking" checked> 🚗 Parkings Discrets</label>
+        <label class="filter-label"><input type="checkbox" class="filter-cb" data-filter-type="type" value="rally" checked> 🟡 Points de Ralliement</label>
+        
+        <h5 style="margin-top:10px; color:#e74c3c;">Niveau de Risque</h5>
+        <label class="filter-label"><input type="checkbox" class="filter-cb" data-filter-type="risque" value="accessible" checked> 🟢 Accessibles</label>
+        <label class="filter-label"><input type="checkbox" class="filter-cb" data-filter-type="risque" value="garde" checked> 🟠 Gardés / Caméras</label>
+        <label class="filter-label"><input type="checkbox" class="filter-cb" data-filter-type="risque" value="dangereux" checked> 🔴 Dangereux / Toxique</label>
+        <label class="filter-label"><input type="checkbox" class="filter-cb" data-filter-type="risque" value="patrol" checked> 🚨 Patrouilles actives</label>
+
+        <h5 style="margin-top:10px; color:#2ecc71;">Catégories (Config)</h5>
+        <div id="category-filter-container"></div>
+    </div>
+
+    <div class="side-tools">
+        <button id="btn-add" class="tool-btn" onclick="toggleTool('add')" title="Ajouter">📍</button>
+        <button id="btn-edit" class="tool-btn" onclick="toggleTool('edit')" title="Modifier">✏️</button>
+        <button id="btn-del" class="tool-btn" onclick="toggleTool('delete')" title="Supprimer">🗑️</button>
+        <button id="btn-measure" class="tool-btn" onclick="toggleTool('measure')" title="Mesurer">📏</button>
+        <button id="btn-patrol" class="tool-btn" onclick="toggleTool('patrol')" title="Signaler Sécurité">👮</button>
+        <button id="btn-export" class="tool-btn" onclick="exportGPX()" title="Exporter en GPX" style="margin-top: 15px;">💾</button>
+        <button id="btn-panic" class="tool-btn panic-btn" onclick="triggerPanic()" title="Anti-Sécurité" style="margin-top: 10px;">🚔</button>
+    </div>
+
+    <div id="layers-menu" class="action-panel hidden">
+        <h4>Fonds de carte</h4>
+        <div class="layer-grid"><button onclick="setMapStyle('classique')">🗺️ Classique</button><button onclick="setMapStyle('satellite')">🛰️ Satellite</button><button onclick="setMapStyle('topo')">⛰️ Topo</button><button onclick="setMapStyle('nuit')">🦇 Nuit</button></div>
+        <h4 style="margin-top: 15px; font-size: 13px; color: #7f8c8d; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">Outils Spéciaux</h4>
+        <div class="layer-grid"><button onclick="toggleRedMode()" id="btn-red-toggle" style="background: rgba(231, 76, 60, 0.15); border: 1px solid #e74c3c; color: #e74c3c;">🔴 Infrarouge</button><button onclick="startTimerPrompt()" style="background: rgba(243, 156, 18, 0.15); border: 1px solid #f39c12; color: #f39c12;">⏱️ Chrono</button><button onclick="toggleNVG()" style="background: rgba(46, 204, 113, 0.15); border: 1px solid #2ecc71; color: #2ecc71;">🥽 Vision Nocturne</button><button onclick="setupDeadManSwitch()" style="background: rgba(142, 68, 173, 0.15); border: 1px solid #8e44ad; color: #8e44ad;">💀 Homme à Terre</button><button onclick="openIntelReport()" style="background: rgba(52, 152, 219, 0.15); border: 1px solid #3498db; color: #3498db;">🌑 Intel Lune</button><button onclick="openWeatherIntel()" style="background: rgba(52, 73, 94, 0.15); border: 1px solid #34495e; color: #2c3e50;">☁️ Intel Météo</button><button onclick="openIntelGallery()" style="grid-column: span 2; background: rgba(149, 165, 166, 0.15); border: 1px solid #95a5a6; color: #7f8c8d;">📂 Ouvrir Galerie Intel</button></div>
+    </div>
+
+    <div id="intel-modal" class="modal-overlay"><div class="modal-content" style="text-align: center;"><h3 style="color: #3498db; border-color: #3498db;">🌑 Rapport Lunaire</h3><div id="moon-icon" style="font-size: 60px; margin: 10px 0;">--</div><h4 id="moon-phase-name" style="margin-bottom: 10px;">Calcul en cours...</h4><p id="moon-tactical-advice" style="font-size: 13px; color: #7f8c8d; background: #f9f9f9; padding: 10px; border-radius: 8px; font-style: italic;"></p><button class="btn-confirm" onclick="document.getElementById('intel-modal').style.display='none'" style="margin-top: 15px; width: 100%; background: #3498db;">Fermer</button></div></div>
+    <div id="weather-modal" class="modal-overlay"><div class="modal-content" style="text-align: center;"><h3 style="color: #34495e; border-color: #34495e;">☁️ Météo Tactique (Zone)</h3><div style="display:flex; justify-content: space-around; margin: 20px 0;"><div><div style="font-size:30px;">🌡️</div><div id="weather-temp" style="font-weight:bold; font-size:18px;">--</div></div><div><div style="font-size:30px;">💨</div><div id="weather-wind" style="font-weight:bold; font-size:18px;">--</div></div></div><p id="weather-tactical-advice" style="font-size: 13px; color: #7f8c8d; background: #f9f9f9; padding: 10px; border-radius: 8px; font-style: italic;">Analyse spatiale en cours...</p><button class="btn-confirm" onclick="document.getElementById('weather-modal').style.display='none'" style="margin-top: 15px; width: 100%; background: #34495e;">Fermer</button></div></div>
+    <div id="gallery-modal" class="modal-overlay"><div class="modal-content" style="max-width: 90%; width: 500px;"><h3 style="color: #2ecc71; border-color: #2ecc71; text-align: center;">📂 Base de Données Visuelle</h3><div id="gallery-grid" class="gallery-grid"></div><button class="btn-cancel" onclick="document.getElementById('gallery-modal').style.display='none'" style="margin-top: 15px; width: 100%;">Fermer la Galerie</button></div></div>
+
+    <div id="radio-panel" class="action-panel hidden"><div class="radio-header" onclick="toggleRadio()">📻 Canal Équipe <span>⬇️</span></div><div style="background: rgba(0,0,0,0.5); padding: 8px; text-align: center; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);"><label style="cursor: pointer; color: #bdc3c7;"><input type="checkbox" id="ghost-mode-cb" style="margin-right: 5px;"> 👻 Mode Éphémère (30s)</label></div><div class="radio-messages" id="radio-messages"></div><div class="radio-input-container"><button id="btn-dictate" onclick="startDictation()" style="background: #2c3e50; border-radius: 0 0 0 15px; padding: 0 12px; font-size: 16px;">🎤</button><input type="text" id="radio-input" placeholder="Message..." onkeypress="if(event.key === 'Enter') sendRadio()"><button onclick="sendRadio()">GO</button></div></div>
+
+    <div class="bottom-dock">
+        <button class="dock-btn" onclick="toggleLayersMenu()"><span class="dock-icon">🗺️</span><span class="dock-text">Cartes</span></button>
+        <button class="dock-btn" id="btn-gps-dock" onclick="localiserMoi()"><span class="dock-icon">🎯</span><span class="dock-text">GPS</span></button>
+        <button class="dock-btn" onclick="toggleRadio()"><span class="dock-icon">📻</span><span class="dock-text">Radio</span></button>
+        <button class="dock-btn stealth-btn" onclick="toggleStealth()"><span class="dock-icon">🥷</span><span class="dock-text">Furtif</span></button>
+        <button class="dock-btn sos-btn" onclick="triggerSOS()"><span class="dock-icon">🚨</span><span class="dock-text">S.O.S</span></button>
+    </div>
+
+    <div id="modal" class="modal-overlay">
         <div class="modal-content">
-            <h3 id="modal-title">Nouveau Rapport de Spot</h3>
+            <h3 id="modal-title">Dossier Renseignement</h3>
             
-            <div class="input-group">
-                <label>Nom du Site</label>
-                <input type="text" id="point-name" placeholder="Ex: Usine Désaffectée">
+            <div style="display:flex; gap:10px;">
+                <div class="input-group" style="flex:1;">
+                    <label>Type de Point</label>
+                    <select id="point-type">
+                        <option value="spot">📍 Spot Principal</option>
+                        <option value="entry">🚪 Point d'Entrée</option>
+                        <option value="parking">🚗 Parking Discret</option>
+                        <option value="rally">🟡 Point de Ralliement</option>
+                    </select>
+                </div>
+                <div class="input-group" style="flex:1;">
+                    <label>Catégorie</label>
+                    <select id="point-category"><option value="Autre">Autre</option></select>
+                </div>
             </div>
 
-            <div class="input-group-row">
-                <div style="flex:1;">
-                    <label>Catégorie</label>
-                    <select id="point-category"></select>
-                </div>
-                <div style="flex:1;">
+            <div class="input-group"><label>Nom du lieu / Point</label><input type="text" id="point-name" required></div>
+
+            <div style="display:flex; gap:10px;">
+                <div class="input-group" style="flex:1;">
                     <label>Niveau de Risque</label>
                     <select id="point-risk">
-                        <option value="Faible">🟢 Faible</option>
-                        <option value="Moyen">🟡 Moyen</option>
-                        <option value="Élevé">🟠 Élevé</option>
-                        <option value="Critique">🔴 CRITIQUE</option>
+                        <option value="accessible">🟢 Sécurisé</option>
+                        <option value="garde">🟠 Gardé / Caméras</option>
+                        <option value="dangereux">🔴 Dangereux</option>
+                    </select>
+                </div>
+                <div class="input-group" style="flex:1;">
+                    <label>État du lieu</label>
+                    <select id="point-state">
+                        <option value="intact">✨ Intact</option>
+                        <option value="vandalise">🏚️ Vandalisé</option>
+                        <option value="renovation">🚧 Rénovation</option>
+                        <option value="demoli">⚫ Démoli</option>
                     </select>
                 </div>
             </div>
 
             <div class="input-group">
-                <label>État / Année / Infos</label>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="point-state" placeholder="État (ex: Ruine)" style="width:30%;">
-                    <input type="number" id="point-year" placeholder="Année" style="width:25%;">
-                    <input type="text" id="point-notes" placeholder="Notes tactiques..." style="flex:1;">
+                <label>📚 Histoire & Notes</label>
+                <div style="display:flex; gap:5px; margin-bottom:5px;">
+                    <input type="number" id="point-year" placeholder="Année (ex: 1985)" style="width:35%;">
+                    <input type="text" id="point-notes" placeholder="Infos tactiques..." style="flex:1;">
                 </div>
             </div>
 
             <div class="input-group">
                 <label>Équipe d'Exploration</label>
-                <div id="people-list">
-                    <input type="text" class="person-input" placeholder="Agent 1">
-                </div>
-                <button type="button" class="btn-small" id="btn-add-person">+ Ajouter un agent</button>
+                <div id="people-list"><input type="text" class="person-input" placeholder="Personne 1"></div>
+                <button type="button" class="btn-small" id="btn-add-person" style="margin-top:5px;">+ Ajouter un membre</button>
             </div>
 
             <div class="input-group">
                 <label>📸 Preuve Visuelle</label>
-                <input type="file" id="point-photo" accept="image/*" capture="environment">
-                <img id="photo-preview" style="display:none; width: 100%; border-radius: 8px; margin-top: 5px;">
+                <input type="file" id="point-photo" accept="image/*" capture="environment" style="background: transparent; border: 1px dashed #bdc3c7; padding: 5px;">
+                <img id="photo-preview" style="display:none; width: 100%; max-height: 100px; object-fit: cover; border-radius: 8px; margin-top: 5px;">
             </div>
             
             <div class="modal-actions">
-                <button class="btn-cancel" id="btn-cancel">ANNULER</button>
-                <button class="btn-confirm" id="btn-confirm">TRANSMETTRE</button>
+                <button class="btn-cancel" id="btn-cancel">Annuler</button>
+                <button class="btn-confirm" id="btn-confirm">Enregistrer</button>
             </div>
         </div>
     </div>
 
+    <div id="map"></div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
