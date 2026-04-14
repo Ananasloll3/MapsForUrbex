@@ -4,6 +4,7 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 const { Server } = require('socket.io');
+const readline = require('readline');
 
 // ─────────────────────────────────────────────
 //  CHARGEMENT DU FICHIER .env UNIQUE
@@ -200,6 +201,47 @@ app.delete('/api/markers/:id', (req, res) => {
     }
     res.json({ success: true });
 });
+
+// ─────────────────────────────────────────────
+//  COMMANDES DEV CONSOLE
+// ─────────────────────────────────────────────
+const rl = require('readline').createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+rl.on('line', (input) => {
+    const text = input.trim();
+    
+    if (text.startsWith('/title ')) {
+        const message = text.replace('/title ', '');
+        console.log(`\x1b[35m[GOD MODE]\x1b[0m Titre géant envoyé : "${message}"`);
+        io.emit('dev_title', message);
+    } 
+    else if (text.startsWith('/alert ')) {
+        const message = text.replace('/alert ', '');
+        console.log(`\x1b[31m[ALERTE]\x1b[0m Notification envoyée : "${message}"`);
+        io.emit('dev_alert', message);
+    }
+    else if (text === '/panic') {
+        console.log(`\x1b[41m\x1b[37m[PANIC MODE]\x1b[0m Faux écran RandoCartes forcé chez tout le monde !`);
+        io.emit('force_panic');
+    }
+    else if (text === '/refresh') {
+        console.log(`\x1b[36m[UPDATE]\x1b[0m Rafraîchissement forcé des pages clients...`);
+        io.emit('force_refresh');
+    }
+    else if (text === '/users') {
+        // io.engine.clientsCount donne le nombre de sockets connectés
+        const count = io.engine ? io.engine.clientsCount : 0;
+        console.log(`\x1b[32m[INFO]\x1b[0m Utilisateurs actuellement connectés : ${count}`);
+    }
+    else if (text.startsWith('/')) {
+        console.log(`Commande inconnue : ${text}. Tapez /help pour la liste.`);
+    }
+});
+
+
 
 // ─────────────────────────────────────────────
 //  LANCEMENT DU SERVEUR

@@ -44,6 +44,64 @@ let targetLaser = L.polyline([], {color: '#e74c3c', dashArray: '10, 10', weight:
 const marqueursSurCarte = {}; 
 const socket = io(); 
 
+
+// ==========================================
+// RÉCEPTION DU TITRE DEV (God Mode)
+// ==========================================
+socket.on('dev_title', (message) => {
+    const overlay = document.getElementById('dev-title-overlay');
+    const textElement = document.getElementById('dev-title-text');
+    
+    // On met le texte
+    textElement.innerText = message;
+    
+    // On l'affiche
+    overlay.classList.remove('hidden');
+    
+    // Si tu es sur tel, ça fera une petite vibration pour le drame
+    if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]); 
+    
+    // On le recache après 5 secondes (5000 millisecondes)
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+    }, 5000);
+});
+
+
+// 1. Notification d'alerte
+socket.on('dev_alert', (message) => {
+    const container = document.getElementById('dev-alert-container');
+    const alertBox = document.createElement('div');
+    alertBox.className = 'dev-alert-box';
+    alertBox.innerText = `⚠️ ADMIN : ${message}`;
+    
+    container.appendChild(alertBox);
+    
+    if ("vibrate" in navigator) navigator.vibrate([300, 100, 300]); // Grosse vibration
+    
+    // Supprimer l'alerte au bout de 8 secondes
+    setTimeout(() => {
+        alertBox.style.opacity = '0';
+        alertBox.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => alertBox.remove(), 500);
+    }, 8000);
+});
+
+// 2. Force Panic Mode (Faux écran RandoCartes)
+socket.on('force_panic', () => {
+    const fakeUi = document.getElementById('fake-ui');
+    if (fakeUi) {
+        fakeUi.classList.remove('hidden'); // Fait apparaitre le faux site public
+    }
+    if ("vibrate" in navigator) navigator.vibrate(500);
+});
+
+// 3. Force le rafraîchissement de la page
+socket.on('force_refresh', () => {
+    // Recharge la page depuis le cache ou le serveur
+    window.location.reload(); 
+});
+
 // ==========================================
 // 2. CONFIGURATION & NOTIFICATIONS
 // ==========================================

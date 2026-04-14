@@ -422,3 +422,72 @@ body.dark-mode .gallery-item div { color: #e74c3c; }
     border-left: 3px solid #8e44ad;
 }
 body.dark-mode .popup-history-box { background: #222; color: #ecf0f1; }
+
+/* =========================================
+   GOD MODE : DEV TITLE
+   ========================================= */
+#dev-title-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Fond légèrement assombri */
+    z-index: 99999; /* Par dessus ABSOLUMENT tout */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* N'empêche pas de cliquer sur la carte en dessous */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+#dev-title-overlay:not(.hidden) {
+    opacity: 1;
+}
+
+#dev-title-text {
+    color: #e74c3c; /* Rouge alerte (tu peux mettre blanc #fff si tu préfères) */
+    font-size: 10vw; /* Taille énorme dynamique selon l'écran */
+    text-transform: uppercase;
+    text-align: center;
+    text-shadow: 0 0 20px rgba(231, 76, 60, 0.8), 0 0 40px #000;
+    animation: titlePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes titlePop {
+    0% { transform: scale(0.3); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================
+   NOTIFICATIONS ALERTE ADMIN
+   ========================================= */
+#dev-alert-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.dev-alert-box {
+    background: #c0392b; /* Rouge agressif */
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6);
+    border-left: 5px solid #ff9ff3;
+    animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes slideInRight {
+    0% { transform: translateX(120%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
