@@ -1,2 +1,8 @@
 /node_modules/*
 /data.*
+
+*.pem
+*.production
+
+config.json
+data.json

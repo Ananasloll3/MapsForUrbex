@@ -6,35 +6,28 @@ const https = require('https');
 const { Server } = require('socket.io');
 
 // ─────────────────────────────────────────────
-//  ENVIRONNEMENT
+//  CHARGEMENT DU FICHIER .env UNIQUE
 // ─────────────────────────────────────────────
-const IS_PROD = process.env.NODE_ENV === 'production';
+require('dotenv').config({ override: true }); 
+
+// On garde le .trim() pour se protéger des espaces invisibles accidentels
+const ENV = (process.env.NODE_ENV || 'development').trim();
+const IS_PROD   = ENV === 'production';
 const ENV_LABEL = IS_PROD ? '🟢 PROD' : '🟡 DEV';
 
 console.log(`\x1b[1m[CONFIG] Démarrage en mode : ${ENV_LABEL}\x1b[0m`);
 
 // ─────────────────────────────────────────────
-//  CONFIGURATION PAR ENVIRONNEMENT
+//  CONFIGURATION (lue depuis le .env)
 // ─────────────────────────────────────────────
-const config = IS_PROD
-    ? {
-        // — PRODUCTION —
-        port: process.env.APP_HTTPS_PORT || 443,
-        portHttp: process.env.APP_HTTP_PORT || 80,
-        useHttps: true,
-        domain: 'https://ananasloll3.online',
-        sslKey: './privkey.pem',
-        sslCert: './fullchain.pem',
-    }
-    : {
-        // — DÉVELOPPEMENT —
-        port: process.env.APP_PORT || 3000,
-        portHttp: null,       // pas de redirection HTTP en dev
-        useHttps: false,
-        domain: 'http://localhost',
-        sslKey: null,
-        sslCert: null,
-    };
+const config = {
+    portHttp:  process.env.PORT_HTTP  || 3000,
+    portHttps: process.env.PORT_HTTPS || 443,
+    useHttps:  process.env.USE_HTTPS === 'true',
+    domain:    process.env.DOMAIN     || 'http://localhost',
+    sslKey:    process.env.SSL_KEY    || null,
+    sslCert:   process.env.SSL_CERT   || null,
+};
 
 // ─────────────────────────────────────────────
 //  CHEMINS DES FICHIERS DE DONNÉES
@@ -55,6 +48,10 @@ app.use(express.static('public'));
 let server;
 
 if (config.useHttps) {
+    if (!config.sslKey || !config.sslCert) {
+        console.error("\x1b[31m[ERREUR] USE_HTTPS est activé mais les chemins SSL_KEY ou SSL_CERT sont manquants dans le .env\x1b[0m");
+        process.exit(1);
+    }
     const sslOptions = {
         key:  fs.readFileSync(config.sslKey),
         cert: fs.readFileSync(config.sslCert),
@@ -82,7 +79,7 @@ function getClientIp(reqOrSocket) {
     let ip = 'IP Inconnue';
     if (reqOrSocket.headers?.['x-forwarded-for'])                   ip = reqOrSocket.headers['x-forwarded-for'].split(',')[0];
     else if (reqOrSocket.handshake?.headers['x-forwarded-for'])     ip = reqOrSocket.handshake.headers['x-forwarded-for'].split(',')[0];
-    else if (reqOrSocket.connection?.remoteAddress)                  ip = reqOrSocket.connection.remoteAddress;
+    else if (reqOrSocket.connection?.remoteAddress)                 ip = reqOrSocket.connection.remoteAddress;
     else if (reqOrSocket.handshake?.address)                        ip = reqOrSocket.handshake.address;
     else if (reqOrSocket.ip)                                        ip = reqOrSocket.ip;
     if (ip.includes('::ffff:')) ip = ip.split('::ffff:')[1];
@@ -208,22 +205,25 @@ app.delete('/api/markers/:id', (req, res) => {
 //  LANCEMENT DU SERVEUR
 // ─────────────────────────────────────────────
 
-// Redirection HTTP → HTTPS (prod uniquement)
-if (IS_PROD && config.portHttp) {
+// Redirection HTTP → HTTPS (Si on est en HTTPS)
+if (config.useHttps && config.portHttp) {
     http.createServer((req, res) => {
-        res.writeHead(301, { Location: `${config.domain}${req.url}` });
+        // Redirige vers la version HTTPS avec le domaine du .env
+        const host = config.domain.startsWith('http') ? config.domain.replace('http://', 'https://') : `https://${config.domain}`;
+        res.writeHead(301, { Location: `${host}${req.url}` });
         res.end();
     }).listen(config.portHttp, () => {
         console.log(`\x1b[43m\x1b[30m 🔄 Redirection HTTP -> HTTPS activée sur le port ${config.portHttp} \x1b[0m`);
     });
 }
 
-// Serveur principal
-server.listen(config.port, () => {
-    const url = `${config.domain}:${config.port}`;
-    if (IS_PROD) {
-        console.log(`\x1b[42m\x1b[30m 🌍 Serveur Command Center lancé sur ${config.domain} \x1b[0m\n`);
+// Lancement du serveur principal (HTTPS ou HTTP selon la config)
+const portPrincipal = config.useHttps ? config.portHttps : config.portHttp;
+
+server.listen(portPrincipal, () => {
+    if (config.useHttps) {
+        console.log(`\x1b[42m\x1b[30m 🌍 Serveur Command Center (HTTPS) lancé sur ${config.domain} \x1b[0m\n`);
     } else {
-        console.log(`\x1b[44m\x1b[37m 🛠️  Serveur DEV lancé sur ${url} \x1b[0m\n`);
+        console.log(`\x1b[44m\x1b[37m 🛠️  Serveur DEV (HTTP) lancé sur ${config.domain}:${portPrincipal} \x1b[0m\n`);
     }
 });
