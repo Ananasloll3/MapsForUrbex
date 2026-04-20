@@ -5,22 +5,20 @@ const http = require('http');
 const https = require('https');
 const { Server } = require('socket.io');
 const readline = require('readline');
+const cookieParser = require('cookie-parser');
+const crypto = require('crypto');
 
 // ─────────────────────────────────────────────
 //  CHARGEMENT DU FICHIER .env UNIQUE
 // ─────────────────────────────────────────────
 require('dotenv').config({ override: true }); 
 
-// On garde le .trim() pour se protéger des espaces invisibles accidentels
 const ENV = (process.env.NODE_ENV || 'development').trim();
 const IS_PROD   = ENV === 'production';
 const ENV_LABEL = IS_PROD ? '🟢 PROD' : '🟡 DEV';
 
 console.log(`\x1b[1m[CONFIG] Démarrage en mode : ${ENV_LABEL}\x1b[0m`);
 
-// ─────────────────────────────────────────────
-//  CONFIGURATION (lue depuis le .env)
-// ─────────────────────────────────────────────
 const config = {
     portHttp:  process.env.PORT_HTTP  || 3000,
     portHttps: process.env.PORT_HTTPS || 443,
@@ -30,27 +28,98 @@ const config = {
     sslCert:   process.env.SSL_CERT   || null,
 };
 
-// ─────────────────────────────────────────────
-//  CHEMINS DES FICHIERS DE DONNÉES
-// ─────────────────────────────────────────────
 const DATA_FILE   = path.join(__dirname, 'data.json');
 const CONFIG_FILE = path.join(__dirname, 'config.json');
+const PASSWORDS_FILE = path.join(__dirname, 'passwords.json');
 
-// ─────────────────────────────────────────────
-//  APPLICATION EXPRESS
-// ─────────────────────────────────────────────
 const app = express();
 app.use(express.json({ limit: '50mb' }));
-app.use(express.static('public'));
+app.use(cookieParser()); // 🟢 AJOUT : Activation du lecteur de cookies
+
+const obtenirHeure = () => new Date().toLocaleTimeString('fr-FR');
+const logInfo   = (msg) => console.log(`\x1b[36m[${obtenirHeure()}] 🔵 INFO :\x1b[0m ${msg}`);
+const logAjout  = (msg) => console.log(`\x1b[32m[${obtenirHeure()}] 🟢 AJOUT :\x1b[0m ${msg}`);
+const logSucces = (msg) => console.log(`\x1b[32m[${obtenirHeure()}] 🟢 SUCCES :\x1b[0m ${msg}`);
+const logModif  = (msg) => console.log(`\x1b[33m[${obtenirHeure()}] 🟠 MODIF :\x1b[0m ${msg}`);
+const logSuppr  = (msg) => console.log(`\x1b[31m[${obtenirHeure()}] 🔴 ALERTE :\x1b[0m ${msg}`);
+const logErreur = (msg) => console.log(`\x1b[31m[${obtenirHeure()}] 🔴 Erreur :\x1b[0m ${msg}`);
+
 
 // ─────────────────────────────────────────────
-//  CRÉATION DU SERVEUR (HTTP ou HTTPS)
+//  🟢 AJOUT : SYSTÈME DE LOGIN & SÉCURITÉ
 // ─────────────────────────────────────────────
+
+// Route qui vérifie le mot de passe tapé par l'utilisateur
+app.post('/api/login', (req, res) => {
+    const { password } = req.body;
+    
+    if (!password) {
+        return res.status(400).json({ success: false, message: "Mot de passe vide" });
+    }
+
+    // On transforme ce que l'utilisateur a tapé en SHA-256
+    const hashedInput = crypto.createHash('sha256').update(password).digest('hex').toLowerCase();
+
+    let validHashes = [];
+    
+    try {
+        if (fs.existsSync(PASSWORDS_FILE)) {
+            validHashes = JSON.parse(fs.readFileSync(PASSWORDS_FILE));
+        }
+    } catch (e) {
+        console.error("Erreur de lecture du fichier passwords.json", e);
+    }
+    
+
+    // On regarde si le hash de l'utilisateur est dans notre liste
+    if (validHashes.includes(hashedInput)) {
+        // Le mot de passe est bon !
+        res.cookie('urbex_auth', 'access_granted', {
+            maxAge: 1 * 24 * 60 * 60 * 1000, 
+            httpOnly: true,
+            sameSite: 'Strict'
+        });
+        logSucces(`Accès autorisé avec un mot de passe valide.`);
+        return res.json({ success: true });
+    } else {
+        // Mauvais mot de passe
+        logErreur(`Tentative d'accès refusée pour l'ip : ${getClientIp(req)}`);
+        return res.status(401).json({ success: false, message: "Code erroné" });
+    }
+});
+
+// Le "Pare-feu" : bloque tous ceux qui n'ont pas le cookie
+app.use((req, res, next) => {
+    // On autorise explicitement la page de login et la route API pour pouvoir se connecter
+    if (req.path === '/login.html' || req.path === '/login.js' || req.path === '/api/login' || req.path.endsWith('.css')) {
+        return next();
+    }
+
+    // On vérifie si l'utilisateur possède le fameux cookie d'accès
+    if (req.cookies && req.cookies.urbex_auth === 'access_granted') {
+        return next(); // C'est bon, on le laisse passer vers ton app
+    }
+
+    // S'il n'a pas le cookie, on le redirige de force vers la page de login
+    if (req.accepts('html')) {
+        return res.redirect('/login.html');
+    }
+    
+    // S'il essaye de tricher en appelant directement l'API des marqueurs
+    res.status(401).json({ error: 'Accès refusé' });
+});
+
+// ─────────────────────────────────────────────
+// (Fin des ajouts de sécurité)
+// ─────────────────────────────────────────────
+
+app.use(express.static('public'));
+
 let server;
 
 if (config.useHttps) {
     if (!config.sslKey || !config.sslCert) {
-        console.error("\x1b[31m[ERREUR] USE_HTTPS est activé mais les chemins SSL_KEY ou SSL_CERT sont manquants dans le .env\x1b[0m");
+        logErreur("USE_HTTPS est activé mais les chemins SSL_KEY ou SSL_CERT sont manquants dans le .env");
         process.exit(1);
     }
     const sslOptions = {
@@ -64,18 +133,6 @@ if (config.useHttps) {
 
 const io = new Server(server);
 
-// ─────────────────────────────────────────────
-//  LOGS COLORÉS
-// ─────────────────────────────────────────────
-const obtenirHeure = () => new Date().toLocaleTimeString('fr-FR');
-const logInfo  = (msg) => console.log(`\x1b[36m[${obtenirHeure()}] 🔵 INFO :\x1b[0m ${msg}`);
-const logAjout = (msg) => console.log(`\x1b[32m[${obtenirHeure()}] 🟢 AJOUT :\x1b[0m ${msg}`);
-const logModif = (msg) => console.log(`\x1b[33m[${obtenirHeure()}] 🟠 MODIF :\x1b[0m ${msg}`);
-const logSuppr = (msg) => console.log(`\x1b[31m[${obtenirHeure()}] 🔴 ALERTE :\x1b[0m ${msg}`);
-
-// ─────────────────────────────────────────────
-//  UTILITAIRE : IP CLIENT
-// ─────────────────────────────────────────────
 function getClientIp(reqOrSocket) {
     let ip = 'IP Inconnue';
     if (reqOrSocket.headers?.['x-forwarded-for'])                   ip = reqOrSocket.headers['x-forwarded-for'].split(',')[0];
@@ -87,9 +144,6 @@ function getClientIp(reqOrSocket) {
     return ip;
 }
 
-// ─────────────────────────────────────────────
-//  DONNÉES : CONFIG & MARKERS
-// ─────────────────────────────────────────────
 function lireConfig() {
     if (!fs.existsSync(CONFIG_FILE)) {
         const defaultConfig = {
@@ -118,6 +172,16 @@ function sauvegarderDonnees(data) {
 // ─────────────────────────────────────────────
 let utilisateursConnectes = 0;
 let squadPlayers = {};
+
+// 🟢 AJOUT : On sécurise aussi les connexions en temps réel (Sockets)
+io.use((socket, next) => {
+    const cookieHeader = socket.request.headers.cookie;
+    if (cookieHeader && cookieHeader.includes('urbex_auth=access_granted')) {
+        next();
+    } else {
+        next(new Error("Accès radio refusé."));
+    }
+});
 
 io.on('connection', (socket) => {
     const ip = getClientIp(socket);
@@ -232,25 +296,58 @@ rl.on('line', (input) => {
         io.emit('force_refresh');
     }
     else if (text === '/users') {
-        // io.engine.clientsCount donne le nombre de sockets connectés
         const count = io.engine ? io.engine.clientsCount : 0;
         console.log(`\x1b[32m[INFO]\x1b[0m Utilisateurs actuellement connectés : ${count}`);
+    }
+    else if (text.startsWith('/addpass ')) {
+        const rawPassword = text.replace('/addpass ', '').trim();
+        
+        if (!rawPassword) {
+            console.log(`\x1b[31m[ERREUR]\x1b[0m Tu dois préciser un mot de passe. Usage : /addpass <password>`);
+            return;
+        }
+
+        // On hash le nouveau mot de passe exactement comme dans le login
+        const hashedInput = crypto.createHash('sha256').update(rawPassword).digest('hex').toLowerCase();
+
+        let validHashes = [];
+        
+        // On récupère les mots de passe existants
+        try {
+            if (fs.existsSync(PASSWORDS_FILE)) {
+                const fileContent = fs.readFileSync(PASSWORDS_FILE, 'utf-8');
+                if (fileContent.trim() !== '') {
+                    validHashes = JSON.parse(fileContent);
+                }
+            }
+        } catch (e) {
+            console.error(`\x1b[31m[ERREUR]\x1b[0m Impossible de lire passwords.json`, e);
+        }
+
+        // On vérifie s'il n'existe pas déjà pour éviter les doublons
+        if (!validHashes.includes(hashedInput)) {
+            validHashes.push(hashedInput);
+            try {
+                // On sauvegarde le tableau mis à jour
+                fs.writeFileSync(PASSWORDS_FILE, JSON.stringify(validHashes, null, 2));
+                console.log(`\x1b[32m[SUCCÈS]\x1b[0m Le mot de passe a été hashé et ajouté à passwords.json !`);
+            } catch (e) {
+                console.error(`\x1b[31m[ERREUR]\x1b[0m Impossible d'écrire dans passwords.json`, e);
+            }
+        } else {
+            console.log(`\x1b[33m[INFO]\x1b[0m Ce mot de passe est déjà autorisé dans la base.`);
+        }
     }
     else if (text.startsWith('/')) {
         console.log(`Commande inconnue : ${text}. Tapez /help pour la liste.`);
     }
 });
 
-
-
 // ─────────────────────────────────────────────
 //  LANCEMENT DU SERVEUR
 // ─────────────────────────────────────────────
-
-// Redirection HTTP → HTTPS (Si on est en HTTPS)
 if (config.useHttps && config.portHttp) {
     http.createServer((req, res) => {
-        // Redirige vers la version HTTPS avec le domaine du .env
         const host = config.domain.startsWith('http') ? config.domain.replace('http://', 'https://') : `https://${config.domain}`;
         res.writeHead(301, { Location: `${host}${req.url}` });
         res.end();
@@ -259,7 +356,6 @@ if (config.useHttps && config.portHttp) {
     });
 }
 
-// Lancement du serveur principal (HTTPS ou HTTP selon la config)
 const portPrincipal = config.useHttps ? config.portHttps : config.portHttp;
 
 server.listen(portPrincipal, () => {
